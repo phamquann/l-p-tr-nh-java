@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>📚 Quản Lý Thư Viện Sách - HUTECH</title>
+    <th:block th:replace="~{layout::link-css}"></th:block>
+    <th:block th:replace="~{layout::custom-css}"></th:block>
+</head>
+
+<body>
+
+<th:block th:replace="~{layout::header}"></th:block>
+
+<div class="container">
+    <!-- Alert Messages -->
+    <div th:if="${successMessage}" class="alert alert-success alert-dismissible fade show" role="alert">
+        <strong>✅ Thành công!</strong> <span th:text="${successMessage}"></span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+    
+    <div th:if="${errorMessage}" class="alert alert-danger alert-dismissible fade show" role="alert">
+        <strong>❌ Lỗi!</strong> <span th:text="${errorMessage}"></span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+
+    <!-- Page Header -->
+    <div class="page-header-section">
+        <div class="header-content">
+            <h1 class="page-title">📚 Quản Lý Thư Viện Sách</h1>
+            <p class="page-description">
+                Danh sách toàn bộ sách trong hệ thống 
+                <span class="badge bg-primary" th:text="'Tổng: ' + ${totalBooks} + ' quyển'"></span>
+            </p>
+        </div>
+        <a href="/books/add" class="btn-add-new">
+            ➕ Thêm Sách Mới
+        </a>
+    </div>
+
+    <!-- Books Table -->
+    <div class="table-container">
+        <div th:if="${books == null || books.isEmpty()}" class="empty-state">
+            <div class="empty-icon">📭</div>
+            <h3>Chưa có sách nào</h3>
+            <p>Hãy thêm sách đầu tiên vào thư viện của bạn!</p>
+            <a href="/books/add" class="btn btn-primary">➕ Thêm Sách Ngay</a>
+        </div>
+
+        <table th:if="${books != null && !books.isEmpty()}" class="table table-hover">
+            <thead>
+                <tr>
+                    <th class="text-center" width="8%">ID</th>
+                    <th width="30%">Tên Sách</th>
+                    <th width="20%">Tác Giả</th>
+                    <th class="text-end" width="12%">Giá</th>
+                    <th width="15%">Thể Loại</th>
+                    <th class="text-center" width="15%">Thao Tác</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr th:each="book : ${books}">
+                    <td class="text-center fw-bold" th:text="${book.id}"></td>
+                    <td>
+                        <div class="book-title">
+                            📖 <span th:text="${book.title}"></span>
+                        </div>
+                    </td>
+                    <td th:text="${book.author}"></td>
+                    <td class="text-end price-cell">
+                        <span class="price-value" th:text="${#numbers.formatDecimal(book.price, 1, 2)}"></span>
+                        <span class="currency">đ</span>
+                    </td>
+                    <td>
+                        <span class="badge bg-info" th:text="${book.category}"></span>
+                    </td>
+                    <td class="text-center action-cell">
+                        <a th:href="@{/books/edit/{id}(id=${book.id})}" 
+                           class="btn btn-sm btn-primary" 
+                           title="Chỉnh sửa">
+                            ✏️ Sửa
+                        </a>
+                        <a th:href="@{/books/delete/{id}(id=${book.id})}" 
+                           class="btn btn-sm btn-danger" 
+                           onclick="return confirm('Bạn có chắc chắn muốn xóa sách này?')"
+                           title="Xóa">
+                            🗑️ Xóa
+                        </a>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<th:block th:replace="~{layout::footer}"></th:block>
+
+</body>
+</html>
+                    <td>
+                        <span class="id-badge" th:text="${book.getId()}"></span>
+                    </td>
+                    <td>
+                        <div class="book-info">
+                            <span class="book-icon">📖</span>
+                            <strong class="book-title" th:text="${book.getTitle()}"></strong>
+                        </div>
+                    </td>
+                    <td>
+                        <span class="author-name" th:text="${book.getAuthor()}"></span>
+                    </td>
+                    <td>
+                        <span class="price-tag" th:text="${book.getPrice()} + ' đ'"></span>
+                    </td>
+                    <td>
+                        <span class="category-badge" th:text="${book.getCategory()}"></span>
+                    </td>
+                    <td class="text-center">
+                        <div class="action-buttons">
+                            
+                                class="btn btn-edit"
+                                th:href="@{/books/edit/{id}(id=${book.getId()})}"
+                                title="Chỉnh sửa sách"
+                            >
+                                <span class="btn-icon">✏️</span>
+                                Sửa
+                            </a>
+                            
+                                class="btn btn-delete"
+                                th:href="@{/books/delete/{id}(id=${book.getId()})}"
+                                onclick="return confirm('⚠️ Bạn có chắc chắn muốn xóa sách này không?')"
+                                title="Xóa sách"
+                            >
+                                <span class="btn-icon">🗑️</span>
+                                Xóa
+                            </a>
+                        </div>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Pagination -->
+    <div class="pagination-section">
+        <div class="pagination-info">
+            Hiển thị <strong>1-10</strong> trong tổng số <strong>50</strong> sách
+        </div>
+        <nav class="pagination-nav">
+            <ul class="pagination">
+                <li class="page-item disabled">
+                    <a class="page-link" href="#">« Trước</a>
+                </li>
+                <li class="page-item active">
+                    <a class="page-link" href="#">1</a>
+                </li>
+                <li class="page-item">
+                    <a class="page-link" href="#">2</a>
+                </li>
+                <li class="page-item">
+                    <a class="page-link" href="#">3</a>
+                </li>
+                <li class="page-item">
+                    <a class="page-link" href="#">Sau »</a>
+                </li>
+            </ul>
+        </nav>
+    </div>
+</div>
+
+<th:block th:replace="~{layout::footer}"></th:block>
+
+</body>
+</html>

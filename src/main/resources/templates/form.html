@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${isEdit} ? '✏️ Chỉnh Sửa Sách - HUTECH' : '➕ Thêm Sách Mới - HUTECH'"></title>
+    <th:block th:replace="~{layout::link-css}"></th:block>
+    <th:block th:replace="~{layout::custom-css}"></th:block>
+</head>
+
+<body>
+
+<th:block th:replace="~{layout::header}"></th:block>
+
+<div class="container">
+    <!-- Page Header -->
+    <div class="form-header">
+        <h1 class="page-title" th:text="${isEdit} ? '✏️ Chỉnh Sửa Thông Tin Sách' : '➕ Thêm Sách Mới'"></h1>
+        <p class="page-description" th:text="${isEdit} ? 'Cập nhật thông tin sách trong hệ thống' : 'Thêm một quyển sách mới vào thư viện'"></p>
+    </div>
+
+    <!-- Form Container -->
+    <div class="form-container">
+        <form th:action="${isEdit} ? @{/books/edit/{id}(id=${book.id})} : @{/books/add}" 
+              th:object="${book}" 
+              method="post" 
+              class="book-form">
+            
+            <!-- Tên Sách -->
+            <div class="form-group">
+                <label for="title" class="form-label">
+                    📚 Tên Sách <span class="required">*</span>
+                </label>
+                <input type="text" 
+                       th:field="*{title}" 
+                       id="title" 
+                       class="form-control"
+                       th:classappend="${#fields.hasErrors('title')} ? 'is-invalid' : ''"
+                       placeholder="Nhập tên sách..."
+                       required>
+                <div th:if="${#fields.hasErrors('title')}" 
+                     class="invalid-feedback"
+                     th:errors="*{title}"></div>
+            </div>
+
+            <!-- Tác Giả -->
+            <div class="form-group">
+                <label for="author" class="form-label">
+                    ✍️ Tác Giả <span class="required">*</span>
+                </label>
+                <input type="text" 
+                       th:field="*{author}" 
+                       id="author" 
+                       class="form-control"
+                       th:classappend="${#fields.hasErrors('author')} ? 'is-invalid' : ''"
+                       placeholder="Nhập tên tác giả..."
+                       required>
+                <div th:if="${#fields.hasErrors('author')}" 
+                     class="invalid-feedback"
+                     th:errors="*{author}"></div>
+            </div>
+
+            <!-- Row: Giá và Thể Loại -->
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label for="price" class="form-label">
+                            💰 Giá (VNĐ) <span class="required">*</span>
+                        </label>
+                        <input type="number" 
+                               th:field="*{price}" 
+                               id="price" 
+                               class="form-control"
+                               th:classappend="${#fields.hasErrors('price')} ? 'is-invalid' : ''"
+                               placeholder="Nhập giá sách..."
+                               step="0.01"
+                               min="0.01"
+                               required>
+                        <div th:if="${#fields.hasErrors('price')}" 
+                             class="invalid-feedback"
+                             th:errors="*{price}"></div>
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label for="category" class="form-label">
+                            🏷️ Thể Loại <span class="required">*</span>
+                        </label>
+                        <select th:field="*{category}" 
+                                id="category" 
+                                class="form-control form-select"
+                                th:classappend="${#fields.hasErrors('category')} ? 'is-invalid' : ''"
+                                required>
+                            <option value="">-- Chọn thể loại --</option>
+                            <option value="Công nghệ thông tin">Công nghệ thông tin</option>
+                            <option value="Văn học">Văn học</option>
+                            <option value="Khoa học">Khoa học</option>
+                            <option value="Kinh tế">Kinh tế</option>
+                            <option value="Kỹ năng mềm">Kỹ năng mềm</option>
+                            <option value="Lịch sử">Lịch sử</option>
+                            <option value="Triết học">Triết học</option>
+                            <option value="Nghệ thuật">Nghệ thuật</option>
+                            <option value="Khác">Khác</option>
+                        </select>
+                        <div th:if="${#fields.hasErrors('category')}" 
+                             class="invalid-feedback"
+                             th:errors="*{category}"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="form-actions">
+                <a href="/books" class="btn btn-secondary">
+                    ◀️ Quay lại
+                </a>
+                <button type="submit" class="btn btn-primary">
+                    <span th:text="${isEdit} ? '💾 Cập nhật' : '➕ Thêm mới'"></span>
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Info Box -->
+    <div class="info-box">
+        <h5>📌 Lưu ý:</h5>
+        <ul>
+            <li>Các trường có dấu <span class="required">*</span> là bắt buộc</li>
+            <li>Giá sách phải lớn hơn 0</li>
+            <li>Tên sách và tác giả phải từ 2-200 ký tự</li>
+            <li>Kiểm tra kỹ thông tin trước khi lưu</li>
+        </ul>
+    </div>
+</div>
+
+<th:block th:replace="~{layout::footer}"></th:block>
+
+</body>
+</html>
