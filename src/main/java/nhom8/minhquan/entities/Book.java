@@ -1,39 +1,42 @@
 package nhom8.minhquan.entities;
 
 import jakarta.persistence.*;
-import jakarta.validation.constraints.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-
-@Entity
-@Table(name = "books")
-@Data
+import lombok.*;
+import org.hibernate.Hibernate;
+import java.util.Objects;
+@Getter
+@Setter
+@ToString
+@RequiredArgsConstructor
 @AllArgsConstructor
-@NoArgsConstructor
+@Entity
+@Builder
+@Table(name = "book")
 public class Book {
-    
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-    
-    @NotBlank(message = "Tên sách không được để trống")
-    @Size(min = 2, max = 200, message = "Tên sách phải từ 2-200 ký tự")
-    @Column(nullable = false, length = 200)
-    private String title;
-    
-    @NotBlank(message = "Tác giả không được để trống")
-    @Size(min = 2, max = 100, message = "Tên tác giả phải từ 2-100 ký tự")
-    @Column(nullable = false, length = 100)
-    private String author;
-    
-    @NotNull(message = "Giá không được để trống")
-    @DecimalMin(value = "0.0", inclusive = false, message = "Giá phải lớn hơn 0")
-    @Column(nullable = false)
-    private Double price;
-    
-    @NotBlank(message = "Thể loại không được để trống")
-    @Size(min = 2, max = 50, message = "Thể loại phải từ 2-50 ký tự")
-    @Column(nullable = false, length = 50)
-    private String category;
+@GeneratedValue(strategy = GenerationType.IDENTITY)
+private Long id;
+@Column(name = "title", length = 50, nullable = false)
+private String title;
+@Column(name = "author", length = 50, nullable = false)
+private String author;
+@Column(name = "price")
+private Double price;
+@ManyToOne(fetch = FetchType.LAZY)
+@JoinColumn(name = "category_id", referencedColumnName = "id")
+@ToString.Exclude
+private Category category;
+@Override
+public boolean equals(Object o) {
+if (this == o) return true;
+if (o == null || Hibernate.getClass(this) !=
+Hibernate.getClass(o)) return false;
+Book book = (Book) o;
+return getId() != null && Objects.equals(getId(),
+book.getId());
+}
+@Override
+public int hashCode() {
+return getClass().hashCode();
+}
 }

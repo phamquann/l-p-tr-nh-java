@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security" lang="vi">
+<head th:replace="~{admin/fragments::admin-head}"></head>
+
+<body>
+    <div class="container-fluid p-0">
+        <div class="row g-0">
+            <nav th:replace="~{admin/fragments::sidebar('chat')}"></nav>
+
+            <main class="main-content">
+                <div th:replace="~{admin/fragments::topbar('💬 Trò chuyện', 'Hỗ trợ khách hàng')}"></div>
+                <div class="px-4">
+                    <th:block th:replace="~{fragments/flash-messages::flash-messages}"></th:block>
+                </div>
+
+                <div class="container-fluid px-4">
+        <style>
+            .chat-container {
+                height: calc(100vh - 200px);
+                display: flex;
+                gap: 0;
+            }
+            
+            .chat-sidebar {
+                width: 350px;
+                background: white;
+                border-radius: 15px 0 0 15px;
+                box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+                overflow: hidden;
+            }
+            
+            .chat-main {
+                flex: 1;
+                background: white;
+                border-radius: 0 15px 15px 0;
+                box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+                display: flex;
+                flex-direction: column;
+            }
+            
+            .chat-header {
+                padding: 20px 25px;
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                color: white;
+                border-bottom: 2px solid rgba(255,255,255,0.1);
+            }
+            
+            .chat-search {
+                padding: 15px 20px;
+                border-bottom: 1px solid #e9ecef;
+            }
+            
+            .chat-list {
+                overflow-y: auto;
+                max-height: calc(100vh - 350px);
+            }
+            
+            .chat-item {
+                padding: 15px 20px;
+                border-bottom: 1px solid #f0f0f0;
+                cursor: pointer;
+                transition: all 0.3s ease;
+                position: relative;
+            }
+            
+            .chat-item:hover {
+                background: #f8f9fa;
+            }
+            
+            .chat-item.active {
+                background: #e7f3ff;
+                border-left: 4px solid #667eea;
+            }
+            
+            .chat-item-avatar {
+                width: 50px;
+                height: 50px;
+                border-radius: 50%;
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                color: white;
+                font-weight: bold;
+                font-size: 20px;
+                flex-shrink: 0;
+            }
+            
+            .chat-item-info {
+                flex: 1;
+                min-width: 0;
+            }
+            
+            .chat-item-name {
+                font-weight: 600;
+                color: #333;
+                margin-bottom: 5px;
+            }
+            
+            .chat-item-message {
+                color: #6c757d;
+                font-size: 14px;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+            
+            .chat-item-badge {
+                width: 25px;
+                height: 25px;
+                border-radius: 50%;
+                background: #dc3545;
+                color: white;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 12px;
+                font-weight: bold;
+                flex-shrink: 0;
+            }
+            
+            .chat-messages {
+                flex: 1;
+                overflow-y: auto;
+                padding: 20px;
+                background: #f8f9fa;
+            }
+            
+            .message {
+                display: flex;
+                margin-bottom: 20px;
+                gap: 10px;
+            }
+            
+            .message-avatar {
+                width: 40px;
+                height: 40px;
+                border-radius: 50%;
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                color: white;
+                font-weight: bold;
+                flex-shrink: 0;
+            }
+            
+            .message-content {
+                max-width: 60%;
+            }
+            
+            .message-bubble {
+                background: white;
+                padding: 12px 18px;
+                border-radius: 18px;
+                box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+                word-wrap: break-word;
+            }
+            
+            .message-time {
+                font-size: 11px;
+                color: #6c757d;
+                margin-top: 5px;
+                padding-left: 5px;
+            }
+            
+            .message.sent {
+                flex-direction: row-reverse;
+            }
+            
+            .message.sent .message-bubble {
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                color: white;
+            }
+            
+            .message.sent .message-time {
+                text-align: right;
+                padding-right: 5px;
+                padding-left: 0;
+            }
+            
+            .message.sent .message-avatar {
+                background: #28a745;
+            }
+            
+            .chat-input-area {
+                padding: 20px;
+                background: white;
+                border-top: 1px solid #e9ecef;
+            }
+            
+            .chat-input {
+                display: flex;
+                gap: 10px;
+                align-items: center;
+            }
+            
+            .chat-input input {
+                flex: 1;
+                border: 2px solid #e9ecef;
+                border-radius: 25px;
+                padding: 12px 20px;
+                font-size: 14px;
+                transition: all 0.3s ease;
+            }
+            
+            .chat-input input:focus {
+                border-color: #667eea;
+                box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.15);
+            }
+            
+            .chat-input button {
+                width: 45px;
+                height: 45px;
+                border-radius: 50%;
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                border: none;
+                color: white;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                transition: all 0.3s ease;
+                cursor: pointer;
+            }
+            
+            .chat-input button:hover {
+                transform: scale(1.1);
+                box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+            }
+            
+            .chat-empty {
+                height: 100%;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                color: #6c757d;
+            }
+            
+            .online-badge {
+                width: 12px;
+                height: 12px;
+                background: #28a745;
+                border-radius: 50%;
+                position: absolute;
+                bottom: 18px;
+                right: 20px;
+                border: 2px solid white;
+            }
+        </style>
+        
+                    <div class="chat-container">
+                <!-- Chat Sidebar -->
+                <div class="chat-sidebar">
+                    <div class="chat-header">
+                        <h5 class="mb-0">
+                            <i class="bi bi-chat-dots-fill"></i> Tin nhắn
+                        </h5>
+                        <small style="opacity: 0.9;">Quản lý hội thoại</small>
+                    </div>
+                    
+                    <div class="chat-search">
+                        <div class="input-group">
+                            <span class="input-group-text bg-white border-end-0">
+                                <i class="bi bi-search"></i>
+                            </span>
+                            <input type="text" class="form-control border-start-0" placeholder="Tìm kiếm khách hàng...">
+                        </div>
+                    </div>
+                    
+                    <div class="chat-list">
+                        <!-- Chat Item Loop -->
+                        <div th:each="conv, iterStat : ${conversations}" 
+                             th:classappend="${selectedConversation != null && conv.id == selectedConversation.id ? 'active' : ''}"
+                             class="chat-item" 
+                             th:attr="data-conversation-id=${conv.id}"
+                             th:onclick="'selectChat(' + ${conv.id} + ')'">
+                            <div class="d-flex gap-3 align-items-center">
+                                <div class="chat-item-avatar" 
+                                     th:text="${conv.customer.fullName != null ? conv.customer.fullName.substring(0,1).toUpperCase() : conv.customer.username.substring(0,1).toUpperCase()}">N</div>
+                                <div class="chat-item-info">
+                                    <div class="chat-item-name" 
+                                         th:text="${conv.customer.fullName != null ? conv.customer.fullName : conv.customer.username}">Nguyễn Văn A</div>
+                                    <div class="chat-item-message" th:text="${conv.messages != null && !conv.messages.isEmpty() ? conv.messages.get(conv.messages.size() - 1).content : 'Chưa có tin nhắn'}">
+                                        Em muốn hỏi về sách...
+                                    </div>
+                                    <small class="text-muted" th:text="${#temporals.format(conv.updatedAt, 'HH:mm dd/MM/yyyy')}">5 phút trước</small>
+                                </div>
+                                <div class="chat-item-badge" 
+                                     th:if="${conv.unreadCountAdmin > 0}"
+                                     th:text="${conv.unreadCountAdmin}">3</div>
+                            </div>
+                            <div class="online-badge" th:if="${iterStat.index < 2}"></div>
+                        </div>
+                        
+                        <!-- No conversations -->
+                        <div th:if="${conversations == null || conversations.isEmpty()}" class="text-center py-5">
+                            <i class="bi bi-inbox text-muted" style="font-size: 48px;"></i>
+                            <p class="text-muted mt-3">Chưa có cuộc trò chuyện nào</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Chat Main Area -->
+                <div class="chat-main">
+                    <div th:if="${selectedConversation != null}">
+                        <div class="chat-header d-flex justify-content-between align-items-center">
+                            <div class="d-flex align-items-center gap-3">
+                                <div class="chat-item-avatar" 
+                                     th:text="${selectedConversation.customer.fullName != null ? selectedConversation.customer.fullName.substring(0,1).toUpperCase() : selectedConversation.customer.username.substring(0,1).toUpperCase()}">N</div>
+                                <div>
+                                    <h6 class="mb-0" 
+                                        th:text="${selectedConversation.customer.fullName != null ? selectedConversation.customer.fullName : selectedConversation.customer.username}">Nguyễn Văn A</h6>
+                                    <small style="opacity: 0.9;">
+                                        <i class="bi bi-circle-fill text-success" style="font-size: 8px;"></i> 
+                                        <span th:text="${selectedConversation.customer.email}">email@example.com</span>
+                                    </small>
+                                </div>
+                            </div>
+                            
+                            <div class="btn-group">
+                                <button class="btn btn-light btn-sm">
+                                    <i class="bi bi-telephone-fill"></i>
+                                </button>
+                                <button class="btn btn-light btn-sm">
+                                    <i class="bi bi-three-dots-vertical"></i>
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="chat-messages" id="chatMessages">
+                            <!-- Messages Loop -->
+                            <div th:each="msg : ${messages}" 
+                                 th:classappend="${msg.senderType == 'ADMIN' ? 'sent' : ''}"
+                                 class="message">
+                                <div class="message-avatar" 
+                                     th:text="${msg.senderType == 'ADMIN' ? 'A' : (msg.sender.fullName != null ? msg.sender.fullName.substring(0,1).toUpperCase() : msg.sender.username.substring(0,1).toUpperCase())}">N</div>
+                                <div class="message-content">
+                                    <div class="message-bubble" th:text="${msg.content}">
+                                        Xin chào admin, em muốn hỏi về cuốn sách Clean Code ạ
+                                    </div>
+                                    <div class="message-time" th:text="${#temporals.format(msg.createdAt, 'HH:mm a')}">10:30 AM</div>
+                                </div>
+                            </div>
+                            
+                            <!-- No messages -->
+                            <div th:if="${messages == null || messages.isEmpty()}" class="text-center py-5">
+                                <i class="bi bi-chat-dots text-muted" style="font-size: 48px;"></i>
+                                <p class="text-muted mt-3">Chưa có tin nhắn nào</p>
+                            </div>
+                        </div>
+                        
+                        <div class="chat-input-area">
+                            <div class="chat-input">
+                                <button type="button" class="btn btn-light rounded-circle" style="width: 45px; height: 45px; background: white;">
+                                    <i class="bi bi-paperclip"></i>
+                                </button>
+                                <button type="button" class="btn btn-light rounded-circle" style="width: 45px; height: 45px; background: white;">
+                                    <i class="bi bi-emoji-smile"></i>
+                                </button>
+                                <input type="text" class="form-control" placeholder="Nhập tin nhắn..." id="messageInput">
+                                <input type="hidden" id="currentConversationId" th:value="${selectedConversation.id}">
+                                <button type="button" onclick="sendMessage()">
+                                    <i class="bi bi-send-fill"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- No conversation selected -->
+                    <div th:if="${selectedConversation == null}" class="chat-empty">
+                        <i class="bi bi-chat-square-text text-muted" style="font-size: 72px;"></i>
+                        <h5 class="mt-3">Chọn một cuộc trò chuyện để bắt đầu</h5>
+                        <p class="text-muted">Chọn một khách hàng từ danh sách bên trái</p>
+                    </div>
+                </div>
+            </div>
+                    </div>
+                </div>
+
+                <input type="hidden" id="csrfToken" th:value="${_csrf.token}">
+                <input type="hidden" id="csrfHeader" th:value="${_csrf.headerName}">
+
+                <script>
+            function selectChat(conversationId) {
+                // Redirect to load conversation
+                window.location.href = '/admin/chat?conversationId=' + conversationId;
+            }
+            
+            function sendMessage() {
+                const input = document.getElementById('messageInput');
+                const conversationId = document.getElementById('currentConversationId');
+                const message = input.value.trim();
+                
+                if (!message || !conversationId) return;
+                
+                // Send via AJAX
+                const csrfTokenEl = document.getElementById('csrfToken');
+                const csrfHeaderEl = document.getElementById('csrfHeader');
+                const headers = {
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                };
+                if (csrfTokenEl && csrfHeaderEl) {
+                    headers[csrfHeaderEl.value] = csrfTokenEl.value;
+                }
+
+                fetch('/admin/api/chat/send', {
+                    method: 'POST',
+                    headers,
+                    body: `conversationId=${conversationId.value}&message=${encodeURIComponent(message)}`
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Get current time
+                        const now = new Date();
+                        const time = now.getHours() + ':' + (now.getMinutes() < 10 ? '0' : '') + now.getMinutes() + ' ' + (now.getHours() >= 12 ? 'PM' : 'AM');
+                        
+                        // Create message element
+                        const messageDiv = document.createElement('div');
+                        messageDiv.className = 'message sent';
+                        messageDiv.innerHTML = `
+                            <div class="message-avatar">A</div>
+                            <div class="message-content">
+                                <div class="message-bubble">${escapeHtml(message)}</div>
+                                <div class="message-time">${time}</div>
+                            </div>
+                        `;
+                        
+                        // Add to chat
+                        const chatMessages = document.getElementById('chatMessages');
+                        const noMessageDiv = chatMessages.querySelector('.text-center');
+                        if (noMessageDiv) {
+                            noMessageDiv.remove();
+                        }
+                        chatMessages.appendChild(messageDiv);
+                        
+                        // Scroll to bottom
+                        chatMessages.scrollTop = chatMessages.scrollHeight;
+                        
+                        // Clear input
+                        input.value = '';
+                    }
+                })
+                .catch(error => console.error('Error:', error));
+            }
+            
+            function escapeHtml(text) {
+                const div = document.createElement('div');
+                div.textContent = text;
+                return div.innerHTML;
+            }
+            
+            // Send message on Enter key
+            const messageInput = document.getElementById('messageInput');
+            if (messageInput) {
+                messageInput.addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter') {
+                        sendMessage();
+                    }
+                });
+            }
+            
+            // Auto scroll to bottom on load
+            window.addEventListener('load', function() {
+                const chatMessages = document.getElementById('chatMessages');
+                if (chatMessages) {
+                    chatMessages.scrollTop = chatMessages.scrollHeight;
+                }
+            });
+            
+            // Auto refresh messages every 3 seconds
+            const currentConversationId = document.getElementById('currentConversationId');
+            if (currentConversationId) {
+                setInterval(function() {
+                    loadNewMessages();
+                }, 3000);
+            }
+            
+            function loadNewMessages() {
+                const conversationId = document.getElementById('currentConversationId');
+                if (!conversationId) return;
+                
+                fetch(`/admin/api/chat/messages/${conversationId.value}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        // Update messages if needed
+                        // This is a simple implementation, you can enhance it to only add new messages
+                    })
+                    .catch(error => console.error('Error:', error));
+            }
+                </script>
+            </main>
+        </div>
+    </div>
+
+    <script th:src="@{/js/bootstrap.min.js}"></script>
+</body>
+</html>

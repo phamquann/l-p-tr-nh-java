@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security" lang="vi">
+<head th:replace="~{admin/fragments::admin-head}"></head>
+
+<body>
+    <div class="container-fluid p-0">
+        <div class="row g-0">
+            <nav th:replace="~{admin/fragments::sidebar('vouchers')}"></nav>
+
+            <main class="main-content">
+                <div th:replace="~{admin/fragments::topbar('🎫 Quản lý voucher', 'Tạo và quản lý mã giảm giá')}"></div>
+                <div class="px-4">
+                    <th:block th:replace="~{fragments/flash-messages::flash-messages}"></th:block>
+                </div>
+
+                <div class="container-fluid px-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="h3 mb-0">
+            <i class="bi bi-ticket-perforated text-primary me-2"></i>
+            Quản lý Voucher
+        </h2>
+        <a th:href="@{/admin/vouchers/add}" class="btn btn-primary">
+            <i class="bi bi-plus-circle me-2"></i>Thêm Voucher Mới
+        </a>
+    </div>
+
+    <!-- Search and Filter -->
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <form th:action="@{/admin/vouchers}" method="get" class="d-flex">
+                <div class="input-group">
+                    <span class="input-group-text"><i class="bi bi-search"></i></span>
+                    <input type="text" class="form-control" 
+                           name="search" 
+                           th:value="${search}"
+                           placeholder="Tìm kiếm theo mã voucher hoặc mô tả...">
+                    <button class="btn btn-outline-secondary" type="submit">Tìm kiếm</button>
+                </div>
+            </form>
+        </div>
+        <div class="col-md-6 text-end">
+            <div class="btn-group" role="group">
+                <a th:href="@{/admin/vouchers}" 
+                   class="btn" 
+                   th:classappend="${#strings.isEmpty(status)} ? 'btn-primary' : 'btn-outline-primary'">
+                    Tất cả
+                </a>
+                <a th:href="@{/admin/vouchers(status='ACTIVE')}" 
+                   class="btn" 
+                   th:classappend="${status == 'ACTIVE'} ? 'btn-success' : 'btn-outline-success'">
+                    Đang hoạt động
+                </a>
+                <a th:href="@{/admin/vouchers(status='INACTIVE')}" 
+                   class="btn" 
+                   th:classappend="${status == 'INACTIVE'} ? 'btn-secondary' : 'btn-outline-secondary'">
+                    Không hoạt động
+                </a>
+                <a th:href="@{/admin/vouchers(status='EXPIRED')}" 
+                   class="btn" 
+                   th:classappend="${status == 'EXPIRED'} ? 'btn-danger' : 'btn-outline-danger'">
+                    Đã hết hạn
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Statistics Cards -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card bg-primary text-white h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h6 class="card-title">Tổng voucher</h6>
+                            <h4 class="mb-0" th:text="${totalVouchers}">0</h4>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="bi bi-ticket-perforated fs-2"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-success text-white h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h6 class="card-title">Đang hoạt động</h6>
+                            <h4 class="mb-0" th:text="${activeVouchers}">0</h4>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="bi bi-check-circle fs-2"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-warning text-white h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h6 class="card-title">Sắp hết hạn</h6>
+                            <h4 class="mb-0" th:text="${expiringVouchers}">0</h4>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="bi bi-clock fs-2"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-danger text-white h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h6 class="card-title">Đã hết hạn</h6>
+                            <h4 class="mb-0" th:text="${expiredVouchers}">0</h4>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="bi bi-x-circle fs-2"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Vouchers Table -->
+    <div class="card">
+        <div class="card-header">
+            <h5 class="card-title mb-0">Danh sách Voucher</h5>
+        </div>
+        <div class="card-body">
+            <div th:if="${#lists.isEmpty(vouchers)}" class="text-center py-5">
+                <i class="bi bi-ticket-perforated display-1 text-muted"></i>
+                <h5 class="mt-3 text-muted">Không tìm thấy voucher nào</h5>
+                <p class="text-muted">Hãy thêm voucher mới để bắt đầu quản lý.</p>
+                <a th:href="@{/admin/vouchers/add}" class="btn btn-primary">
+                    <i class="bi bi-plus-circle me-2"></i>Thêm Voucher Đầu Tiên
+                </a>
+            </div>
+            
+            <div th:if="${not #lists.isEmpty(vouchers)}" class="table-responsive">
+                <table class="table table-hover align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th scope="col">Mã Voucher</th>
+                            <th scope="col">Mô tả</th>
+                            <th scope="col">Loại giảm giá</th>
+                            <th scope="col">Giá trị</th>
+                            <th scope="col">Số lượng</th>
+                            <th scope="col">Thời hạn</th>
+                            <th scope="col">Trạng thái</th>
+                            <th scope="col" width="150">Thao tác</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="voucher : ${vouchers}">
+                            <td>
+                                <strong th:text="${voucher.code}" class="text-primary">SAVE20</strong>
+                            </td>
+                            <td th:text="${voucher.description}">Giảm giá 20%</td>
+                            <td>
+                                <span th:switch="${voucher.discountType.name()}" class="badge">
+                                    <span th:case="'PERCENTAGE'" class="badge bg-info">Phần trăm</span>
+                                    <span th:case="'FIXED_AMOUNT'" class="badge bg-warning">Số tiền cố định</span>
+                                </span>
+                            </td>
+                            <td>
+                                <span th:if="${voucher.discountType.name() == 'PERCENTAGE'}" 
+                                      th:text="${voucher.discountValue + '%'}">20%</span>
+                                <span th:if="${voucher.discountType.name() == 'FIXED_AMOUNT'}" 
+                                      th:text="${#numbers.formatDecimal(voucher.discountValue, 0, 'COMMA', 0, 'POINT')} + 'đ'">100,000đ</span>
+                            </td>
+                            <td>
+                                <span th:if="${voucher.usageLimit != null}" 
+                                      th:text="${voucher.usedCount + '/' + voucher.usageLimit}">5/100</span>
+                                <span th:if="${voucher.usageLimit == null}" 
+                                      th:text="${voucher.usedCount + ' lần'}">5 lần</span>
+                                <div th:if="${voucher.usageLimit != null}" class="progress mt-1" style="height: 4px;">
+                                    <div class="progress-bar" role="progressbar" 
+                                         th:style="'width: ' + (${voucher.usedCount * 100 / voucher.usageLimit}) + '%'"
+                                         th:classappend="${(voucher.usedCount / voucher.usageLimit) > 0.8} ? 'bg-warning' : 'bg-success'">
+                                    </div>
+                                </div>
+                            </td>
+                            <td>
+                                <small class="text-muted">
+                                    Từ: <span th:text="${#temporals.format(voucher.startDate, 'dd/MM/yyyy')}">01/01/2024</span><br>
+                                    Đến: <span th:text="${#temporals.format(voucher.endDate, 'dd/MM/yyyy')}">31/12/2024</span>
+                                </small>
+                            </td>
+                            <td>
+                                <span th:if="${voucher.isExpired()}" class="badge bg-danger">Hết hạn</span>
+                                <span th:if="${!voucher.isExpired() && voucher.isActive}" class="badge bg-success">Hoạt động</span>
+                                <span th:if="${!voucher.isExpired() && !voucher.isActive}" class="badge bg-secondary">Tạm dừng</span>
+                            </td>
+                            <td>
+                                <div class="btn-group btn-group-sm" role="group">
+                                    <a th:href="@{/admin/vouchers/edit/{id}(id=${voucher.id})}" 
+                                       class="btn btn-outline-primary" title="Chỉnh sửa">
+                                        <i class="bi bi-pencil"></i>
+                                    </a>
+                                    
+                                    <!-- Toggle Status Button -->
+                                    <form th:action="@{/admin/vouchers/toggle-status/{id}(id=${voucher.id})}" 
+                                          method="post" class="d-inline">
+                                        <button type="submit" 
+                                                class="btn"
+                                                th:classappend="${voucher.isActive} ? 'btn-outline-warning' : 'btn-outline-success'"
+                                                th:title="${voucher.isActive} ? 'Tạm ngừng' : 'Kích hoạt'"
+                                                th:disabled="${voucher.isExpired()}"
+                                                onclick="return confirm('Bạn có chắc chắn muốn thay đổi trạng thái voucher này?')">
+                                            <i th:class="${voucher.isActive} ? 'bi bi-pause' : 'bi bi-play'"></i>
+                                        </button>
+                                    </form>
+                                    
+                                    <form th:action="@{/admin/vouchers/delete/{id}(id=${voucher.id})}" 
+                                          method="post" class="d-inline">
+                                        <button type="submit" class="btn btn-outline-danger" title="Xóa"
+                                                onclick="return confirm('Bạn có chắc chắn muốn xóa voucher này? Hành động này không thể hoàn tác!')">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <script th:src="@{/js/bootstrap.min.js}"></script>
+</body>
+</html>

@@ -1,5 +1,7 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<html xmlns:th="http://www.thymeleaf.org" 
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security" 
+      lang="vi">
 <head>
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
@@ -13,6 +15,9 @@
         rel="stylesheet"
         th:href="@{/cs/bootstrap.min.css}"
     >
+    
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 
     <link
         th:fragment="custom-css"
@@ -24,10 +29,10 @@
 <body class="d-flex flex-column h-100">
 
 <header th:fragment="header">
-    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+    <nav class="navbar navbar-expand-lg navbar-dark" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
         <div class="container-fluid">
 
-            <a class="navbar-brand" href="/">HUTECH</a>
+            <a class="navbar-brand fw-bold" href="/books">📚 HUTECH Bookstore</a>
 
             <button
                 class="navbar-toggler"
@@ -47,25 +52,43 @@
             >
                 <ul class="navbar-nav me-auto mb-2 mb-lg-0">
                     <li class="nav-item">
-                        <a
-                            class="nav-link active"
-                            aria-current="page"
-                            href="/"
-                        >
-                            Home
-                        </a>
+                        <a class="nav-link" href="/">🏠 Trang Chủ</a>
                     </li>
 
                     <li class="nav-item">
-                        <a class="nav-link" href="/books">
-                            List Book
-                        </a>
+                        <a class="nav-link" href="/books">📚 Sách</a>
                     </li>
 
                     <li class="nav-item">
-                        <a class="nav-link" href="/books/add">
-                            Add Book
-                        </a>
+                        <a class="nav-link" href="/cart">🛒 Giỏ Hàng</a>
+                    </li>
+                    
+                    <li class="nav-item" sec:authorize="isAuthenticated()">
+                        <a class="nav-link" href="/profile/orders">📦 Đơn Hàng</a>
+                    </li>
+                    
+                    <li class="nav-item" sec:authorize="isAuthenticated()">
+                        <a class="nav-link" href="/profile">👤 Tài Khoản</a>
+                    </li>
+
+                    <li class="nav-item" sec:authorize="isAuthenticated()">
+                        <a class="nav-link" href="/chat">💬 Trò Chuyện</a>
+                    </li>
+                    
+                    <li class="nav-item" sec:authorize="hasRole('ADMIN')">
+                        <a class="nav-link" href="/admin/dashboard">⚙️ Dashboard</a>
+                    </li>
+                </ul>
+                
+                <!-- Right side - Login/Logout -->
+                <ul class="navbar-nav">
+                    <li class="nav-item" sec:authorize="!isAuthenticated()">
+                        <a class="nav-link" href="/login">🔐 Đăng Nhập</a>
+                    </li>
+                    <li class="nav-item" sec:authorize="isAuthenticated()">
+                        <form th:action="@{/logout}" method="post" style="margin: 0;">
+                            <button type="submit" class="nav-link btn btn-link" style="border: none;">🚪 Đăng Xuất</button>
+                        </form>
                     </li>
                 </ul>
             </div>
@@ -73,6 +96,9 @@
         </div>
     </nav>
 </header>
+
+<!-- Flash Messages -->
+<th:block th:replace="~{fragments/flash-messages::flash-messages}"></th:block>
 
 <div class="container">
     <div th:fragment="content"></div>
@@ -88,6 +114,9 @@
     <script th:src="@{/js/bootstrap.min.js}"></script>
     <script th:src="@{/js/jquery-4.0.0.min.js}"></script>
 </footer>
+
+<!-- Chat Widget -->
+<th:block th:replace="~{fragments/chat-widget::chat-widget}"></th:block>
 
 </body>
 </html>

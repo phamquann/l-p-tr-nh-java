@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" 
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head th:fragment="admin-head">
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <link rel="stylesheet" th:href="@{/cs/bootstrap.min.css}">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    
+    <style>
+        body {
+            min-height: 100vh;
+            background: #f5f7fa;
+        }
+        
+        .sidebar {
+            min-height: 100vh;
+            background: linear-gradient(180deg, #667eea 0%, #764ba2 100%);
+            box-shadow: 3px 0 15px rgba(0,0,0,0.1);
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 250px;
+            z-index: 1000;
+        }
+        
+        .sidebar .nav-link {
+            color: rgba(255,255,255,0.85);
+            padding: 14px 25px;
+            margin: 5px 15px;
+            border-radius: 10px;
+            transition: all 0.3s ease;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+        }
+        
+        .sidebar .nav-link:hover {
+            background: rgba(255,255,255,0.15);
+            color: white;
+            transform: translateX(5px);
+        }
+        
+        .sidebar .nav-link.active {
+            background: rgba(255,255,255,0.25);
+            color: white;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.2);
+        }
+        
+        .sidebar .nav-link i {
+            width: 25px;
+            margin-right: 12px;
+            font-size: 18px;
+        }
+        
+        .sidebar-header {
+            padding: 30px 25px;
+            background: rgba(0,0,0,0.15);
+            color: white;
+            margin-bottom: 20px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        .main-content {
+            margin-left: 250px;
+            padding: 0;
+        }
+        
+        .top-navbar {
+            background: white;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            padding: 20px 40px;
+            margin-bottom: 30px;
+            position: sticky;
+            top: 0;
+            z-index: 999;
+        }
+        
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .user-avatar {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 18px;
+        }
+        
+        .content-card {
+            border: none;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+            margin-bottom: 30px;
+        }
+        
+        .content-card .card-header {
+            background: white;
+            border-bottom: 2px solid #f0f0f0;
+            padding: 20px 25px;
+            border-radius: 15px 15px 0 0 !important;
+        }
+        
+        .page-title {
+            font-size: 28px;
+            font-weight: bold;
+            color: #333;
+            margin: 0;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Sidebar Fragment -->
+    <nav th:fragment="sidebar(activePage)" class="sidebar">
+        <div class="sidebar-header">
+            <h4><i class="bi bi-shield-check"></i> ADMIN PANEL</h4>
+            <small style="opacity: 0.8;">HUTECH Bookstore</small>
+        </div>
+        
+        <ul class="nav flex-column">
+            <li class="nav-item">
+                <a class="nav-link" th:classappend="${activePage == 'dashboard' ? 'active' : ''}" th:href="@{/admin/dashboard}">
+                    <i class="bi bi-speedometer2"></i>
+                    Dashboard
+                </a>
+            </li>
+            
+            <li class="nav-item">
+                <a class="nav-link" th:classappend="${activePage == 'users' ? 'active' : ''}" th:href="@{/admin/users}">
+                    <i class="bi bi-people"></i>
+                    Quản lý người dùng
+                </a>
+            </li>
+            
+            <li class="nav-item">
+                <a class="nav-link" th:classappend="${activePage == 'products' ? 'active' : ''}" th:href="@{/admin/products}">
+                    <i class="bi bi-book"></i>
+                    Quản lý sản phẩm
+                </a>
+            </li>
+            
+            <li class="nav-item">
+                <a class="nav-link" th:classappend="${activePage == 'orders' ? 'active' : ''}" th:href="@{/admin/orders}">
+                    <i class="bi bi-cart-check"></i>
+                    Quản lý đơn hàng
+                </a>
+            </li>
+            
+            <li class="nav-item">
+                <a class="nav-link" th:classappend="${activePage == 'categories' ? 'active' : ''}" th:href="@{/admin/categories}">
+                    <i class="bi bi-tags"></i>
+                    Quản lý danh mục
+                </a>
+            </li>
+
+            <li class="nav-item">
+                <a class="nav-link" th:classappend="${activePage == 'vouchers' ? 'active' : ''}" th:href="@{/admin/vouchers}">
+                    <i class="bi bi-ticket-perforated"></i>
+                    Quản lý voucher
+                </a>
+            </li>
+
+            <li class="nav-item">
+                <a class="nav-link" th:classappend="${activePage == 'chat' ? 'active' : ''}" th:href="@{/admin/chat}">
+                    <i class="bi bi-chat-dots"></i>
+                    Trò chuyện khách hàng
+                    <span class="badge bg-danger ms-2" th:if="${totalUnreadCount != null && totalUnreadCount > 0}" th:text="${totalUnreadCount}">5</span>
+                </a>
+            </li>
+            
+            <li class="nav-item">
+                <a class="nav-link" th:classappend="${activePage == 'reports' ? 'active' : ''}" th:href="@{/admin/reports}">
+                    <i class="bi bi-graph-up"></i>
+                    Thống kê - Báo cáo
+                </a>
+            </li>
+            
+            <li class="nav-item">
+                <a class="nav-link" th:classappend="${activePage == 'settings' ? 'active' : ''}" th:href="@{/admin/settings}">
+                    <i class="bi bi-gear"></i>
+                    Cài đặt hệ thống
+                </a>
+            </li>
+            
+            <li class="nav-item">
+                <form th:action="@{/logout}" method="post" style="margin: 0;">
+                    <button type="submit" class="nav-link border-0 bg-transparent w-100 text-start">
+                        <i class="bi bi-box-arrow-right"></i>
+                        Đăng xuất
+                    </button>
+                </form>
+            </li>
+        </ul>
+    </nav>
+
+    <!-- Top Navbar Fragment -->
+    <div th:fragment="topbar(pageTitle, pageDesc)" class="top-navbar d-flex justify-content-between align-items-center">
+        <div>
+            <h1 class="page-title" th:text="${pageTitle}">Page Title</h1>
+            <p class="text-muted mb-0" th:text="${pageDesc}">Page Description</p>
+        </div>
+        
+        <div class="user-info">
+            <div class="user-avatar" th:text="${#authentication.name.substring(0,1).toUpperCase()}">A</div>
+            <div>
+                <div class="fw-bold" sec:authentication="name">admin</div>
+                <small class="text-muted">
+                    <span class="badge bg-danger">ADMIN</span>
+                </small>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" 
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security" 
+      lang="vi"
+      th:fragment="layout (title, content)">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:replace="${title}">Admin Panel - HUTECH Bookstore</title>
+    
+    <link rel="stylesheet" th:href="@{/cs/bootstrap.min.css}">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" th:href="@{/cs/style.css}">
+    
+    <style>
+        body {
+            min-height: 100vh;
+        }
+        
+        .sidebar {
+            min-height: 100vh;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+        }
+        
+        .sidebar .nav-link {
+            color: rgba(255,255,255,0.8);
+            padding: 12px 20px;
+            margin: 5px 10px;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+        
+        .sidebar .nav-link:hover {
+            background: rgba(255,255,255,0.1);
+            color: white;
+            transform: translateX(5px);
+        }
+        
+        .sidebar .nav-link.active {
+            background: rgba(255,255,255,0.2);
+            color: white;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+        }
+        
+        .sidebar .nav-link i {
+            width: 25px;
+            margin-right: 10px;
+        }
+        
+        .sidebar-header {
+            padding: 20px;
+            background: rgba(0,0,0,0.1);
+            color: white;
+            margin-bottom: 20px;
+        }
+        
+        .main-content {
+            background: #f8f9fa;
+            min-height: 100vh;
+        }
+        
+        .top-navbar {
+            background: white;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            padding: 15px 30px;
+            margin-bottom: 30px;
+        }
+        
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar -->
+            <nav class="col-md-2 col-lg-2 d-md-block sidebar collapse" id="sidebarMenu">
+                <div class="sidebar-header">
+                    <h4><i class="bi bi-shield-check"></i> ADMIN PANEL</h4>
+                    <small>HUTECH Bookstore</small>
+                </div>
+                
+                <div class="position-sticky">
+                    <ul class="nav flex-column">
+                        <li class="nav-item">
+                            <a class="nav-link" th:href="@{/admin/dashboard}"
+                               th:classappend="${#httpServletRequest.requestURI == '/admin/dashboard' ? 'active' : ''}">
+                                <i class="bi bi-speedometer2"></i>
+                                Dashboard
+                            </a>
+                        </li>
+                        
+                        <li class="nav-item">
+                            <a class="nav-link" th:href="@{/admin/users}"
+                               th:classappend="${#strings.startsWith(#httpServletRequest.requestURI, '/admin/users') ? 'active' : ''}">
+                                <i class="bi bi-people"></i>
+                                Quản lý người dùng
+                            </a>
+                        </li>
+                        
+                        <li class="nav-item">
+                            <a class="nav-link" th:href="@{/admin/products}"
+                               th:classappend="${#strings.startsWith(#httpServletRequest.requestURI, '/admin/products') ? 'active' : ''}">
+                                <i class="bi bi-book"></i>
+                                Quản lý sản phẩm
+                            </a>
+                        </li>
+                        
+                        <li class="nav-item">
+                            <a class="nav-link" th:href="@{/admin/orders}"
+                               th:classappend="${#strings.startsWith(#httpServletRequest.requestURI, '/admin/orders') ? 'active' : ''}">
+                                <i class="bi bi-cart-check"></i>
+                                Quản lý đơn hàng
+                            </a>
+                        </li>
+                        
+                        <li class="nav-item">
+                            <a class="nav-link" th:href="@{/admin/categories}"
+                               th:classappend="${#strings.startsWith(#httpServletRequest.requestURI, '/admin/categories') ? 'active' : ''}">
+                                <i class="bi bi-tags"></i>
+                                Quản lý danh mục
+                            </a>
+                        </li>
+                        
+                        <li class="nav-item">
+                            <a class="nav-link" th:href="@{/admin/vouchers}"
+                               th:classappend="${#strings.startsWith(#httpServletRequest.requestURI, '/admin/vouchers') ? 'active' : ''}">
+                                <i class="bi bi-ticket-perforated"></i>
+                                Quản lý voucher
+                            </a>
+                        </li>
+                        
+                        <li class="nav-item">
+                            <a class="nav-link" th:href="@{/admin/chat}"
+                               th:classappend="${#strings.startsWith(#httpServletRequest.requestURI, '/admin/chat') ? 'active' : ''}">
+                                <i class="bi bi-chat-dots"></i>
+                                Trò chuyện khách hàng
+                                <span class="badge bg-danger ms-2" th:if="${totalUnreadCount != null && totalUnreadCount > 0}" th:text="${totalUnreadCount}">5</span>
+                            </a>
+                        </li>
+                        
+                        <li class="nav-item">
+                            <a class="nav-link" th:href="@{/admin/reports}"
+                               th:classappend="${#strings.startsWith(#httpServletRequest.requestURI, '/admin/reports') ? 'active' : ''}">
+                                <i class="bi bi-graph-up"></i>
+                                Thống kê - Báo cáo
+                            </a>
+                        </li>
+                        
+                        <li class="nav-item">
+                            <a class="nav-link" th:href="@{/admin/settings}"
+                               th:classappend="${#strings.startsWith(#httpServletRequest.requestURI, '/admin/settings') ? 'active' : ''}">
+                                <i class="bi bi-gear"></i>
+                                Cài đặt hệ thống
+                            </a>
+                        </li>
+                        
+                        <li class="nav-item mt-4">
+                            <form th:action="@{/logout}" method="post">
+                                <button type="submit" class="nav-link border-0 bg-transparent w-100 text-start">
+                                    <i class="bi bi-box-arrow-right"></i>
+                                    Đăng xuất
+                                </button>
+                            </form>
+                        </li>
+                    </ul>
+                </div>
+            </nav>
+
+            <!-- Main Content -->
+            <main class="col-md-10 ms-sm-auto col-lg-10 px-md-4 main-content">
+                <!-- Top Navbar -->
+                <div class="top-navbar d-flex justify-content-between align-items-center">
+                    <div>
+                        <button class="btn btn-link d-md-none" type="button" data-bs-toggle="collapse" data-bs-target="#sidebarMenu">
+                            <i class="bi bi-list fs-3"></i>
+                        </button>
+                        <h5 class="mb-0 d-inline-block" th:text="${pageTitle ?: 'Dashboard'}">Dashboard</h5>
+                    </div>
+                    
+                    <div class="user-info">
+                        <div class="user-avatar" th:text="${#authentication.name.substring(0,1).toUpperCase()}">A</div>
+                        <div>
+                            <div class="fw-bold" sec:authentication="name">admin</div>
+                            <small class="text-muted">
+                                <span class="badge bg-danger" sec:authorize="hasRole('ADMIN')">ADMIN</span>
+                            </small>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Flash Messages -->
+                <th:block th:replace="~{fragments/flash-messages::flash-messages}"></th:block>
+
+                <!-- Page Content -->
+                <div th:replace="${content}">
+                    <!-- Content will be inserted here -->
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <script th:src="@{/js/bootstrap.min.js}"></script>
+    <script th:fragment="custom-js" th:src="@{/js/jquery-4.0.0.min.js}"></script>
+</body>
+</html>

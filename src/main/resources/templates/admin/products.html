@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security" lang="vi">
+<head th:replace="~{admin/fragments::admin-head}"></head>
+<body>
+    <div class="container-fluid p-0">
+        <div class="row g-0">
+            <nav th:replace="~{admin/fragments::sidebar('products')}"></nav>
+            <main class="main-content">
+                <div th:replace="~{admin/fragments::topbar('📚 Quản lý sản phẩm', 'Quản lý kho sách và thông tin sản phẩm')}"></div>
+                <div class="px-4"><th:block th:replace="~{fragments/flash-messages::flash-messages}"></th:block></div>
+                <div class="container-fluid px-4">
+                    <!-- Stats Cards -->
+                    <div class="row mb-4">
+                        <div class="col-md-4">
+                            <div class="card bg-primary text-white">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <h6 class="mb-0">Tổng sản phẩm</h6>
+                                            <h2 class="mb-0" th:text="${books != null ? books.size() : 0}">0</h2>
+                                        </div>
+                                        <div style="font-size: 3rem; opacity: 0.5;">📚</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="content-card card">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <h5 class="mb-0"><i class="bi bi-book-fill text-primary"></i> Danh sách sản phẩm</h5>
+                            <a th:href="@{/books/add}" class="btn btn-primary">
+                                <i class="bi bi-plus-circle"></i> Thêm sản phẩm mới
+                            </a>
+                        </div>
+                        <div class="card-body">
+                            <div th:if="${books == null || books.isEmpty()}" class="text-center py-5">
+                                <i class="bi bi-inbox text-muted" style="font-size: 64px; opacity: 0.3;"></i>
+                                <h5 class="text-muted mt-4">Chưa có sản phẩm nào</h5>
+                                <p class="text-muted">Bắt đầu thêm sản phẩm đầu tiên vào kho</p>
+                                <a th:href="@{/books/add}" class="btn btn-primary">
+                                    <i class="bi bi-plus-circle"></i> Thêm sản phẩm đầu tiên
+                                </a>
+                            </div>
+                            
+                            <div th:if="${books != null && !books.isEmpty()}" class="table-responsive">
+                                <table class="table table-hover align-middle">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th width="6%">ID</th>
+                                            <th width="30%">Tên sách</th>
+                                            <th width="18%">Tác giả</th>
+                                            <th width="14%" class="text-end">Giá</th>
+                                            <th width="12%">Danh mục</th>
+                                            <th width="20%" class="text-center">Thao tác</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr th:each="book : ${books}">
+                                            <td>
+                                                <span class="badge bg-secondary">#<span th:text="${book.id}">1</span></span>
+                                            </td>
+                                            <td>
+                                                <div class="d-flex align-items-center">
+                                                    <span class="me-2" style="font-size: 1.5rem;">📖</span>
+                                                    <div>
+                                                        <div class="fw-semibold" th:text="${book.title}">Tên sách</div>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td th:text="${book.author}">Tác giả</td>
+                                            <td class="text-end">
+                                                <span class="fw-bold text-success" th:text="${#numbers.formatDecimal(book.price, 1, 0)} + 'đ'">0đ</span>
+                                            </td>
+                                            <td>
+                                                <span class="badge bg-info" th:text="${book.category?.name ?: 'Chưa phân loại'}">Danh mục</span>
+                                            </td>
+                                            <td class="text-center">
+                                                <div class="btn-group" role="group">
+                                                    <a th:href="@{/books/detail/{id}(id=${book.id})}" 
+                                                       class="btn btn-sm btn-outline-info" 
+                                                       title="Xem chi tiết">
+                                                        <i class="bi bi-eye"></i>
+                                                    </a>
+                                                    <a th:href="@{/books/edit/{id}(id=${book.id})}" 
+                                                       class="btn btn-sm btn-outline-primary" 
+                                                       title="Chỉnh sửa">
+                                                        <i class="bi bi-pencil"></i>
+                                                    </a>
+                                                    <a th:href="@{/books/delete/{id}(id=${book.id})}" 
+                                                       class="btn btn-sm btn-outline-danger" 
+                                                       onclick="return confirm('⚠️ Bạn có chắc chắn muốn xóa sản phẩm này?')"
+                                                       title="Xóa">
+                                                        <i class="bi bi-trash"></i>
+                                                    </a>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+    <script th:src="@{/js/bootstrap.min.js}"></script>
+</body>
+</html>

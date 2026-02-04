@@ -91,30 +91,20 @@
                         <select th:field="*{category}" 
                                 id="category" 
                                 class="form-control form-select"
-                                th:classappend="${#fields.hasErrors('category')} ? 'is-invalid' : ''"
                                 required>
                             <option value="">-- Chọn thể loại --</option>
-                            <option value="Công nghệ thông tin">Công nghệ thông tin</option>
-                            <option value="Văn học">Văn học</option>
-                            <option value="Khoa học">Khoa học</option>
-                            <option value="Kinh tế">Kinh tế</option>
-                            <option value="Kỹ năng mềm">Kỹ năng mềm</option>
-                            <option value="Lịch sử">Lịch sử</option>
-                            <option value="Triết học">Triết học</option>
-                            <option value="Nghệ thuật">Nghệ thuật</option>
-                            <option value="Khác">Khác</option>
+                            <option th:each="cat : ${categories}" 
+                                    th:value="${cat.id}" 
+                                    th:text="${cat.name}"></option>
                         </select>
-                        <div th:if="${#fields.hasErrors('category')}" 
-                             class="invalid-feedback"
-                             th:errors="*{category}"></div>
                     </div>
                 </div>
             </div>
 
             <!-- Action Buttons -->
             <div class="form-actions">
-                <a href="/books" class="btn btn-secondary">
-                    ◀️ Quay lại
+                <a th:href="@{/admin/products}" class="btn btn-secondary">
+                    ◀️ Quay lại quản lý
                 </a>
                 <button type="submit" class="btn btn-primary">
                     <span th:text="${isEdit} ? '💾 Cập nhật' : '➕ Thêm mới'"></span>
@@ -129,7 +119,7 @@
         <ul>
             <li>Các trường có dấu <span class="required">*</span> là bắt buộc</li>
             <li>Giá sách phải lớn hơn 0</li>
-            <li>Tên sách và tác giả phải từ 2-200 ký tự</li>
+            <li>Tên sách và tác giả tối đa 50 ký tự</li>
             <li>Kiểm tra kỹ thông tin trước khi lưu</li>
         </ul>
     </div>

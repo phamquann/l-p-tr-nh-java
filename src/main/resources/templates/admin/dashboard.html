@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security" lang="vi">
+<head th:replace="~{admin/fragments::admin-head}"></head>
+
+<body>
+    <div class="container-fluid p-0">
+        <div class="row g-0">
+            <nav th:replace="~{admin/fragments::sidebar('dashboard')}"></nav>
+
+            <main class="main-content">
+                <div th:replace="~{admin/fragments::topbar('📊 Dashboard', 'Tổng quan hệ thống')}"></div>
+                <div class="px-4">
+                    <th:block th:replace="~{fragments/flash-messages::flash-messages}"></th:block>
+                </div>
+
+                <div class="container-fluid px-4">
+    <!-- Stats Cards -->
+    <div class="row g-4 mb-4">
+        <div class="col-xl-3 col-md-6">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <div class="text-muted small text-uppercase">Tổng sản phẩm</div>
+                            <div class="h2 mb-0 text-primary" th:text="${totalBooks ?: 0}">0</div>
+                            <small class="text-success"><i class="bi bi-arrow-up"></i> +12% tháng này</small>
+                        </div>
+                        <div class="display-4 text-primary opacity-25">
+                            <i class="bi bi-book-fill"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <div class="text-muted small text-uppercase">Người dùng</div>
+                            <div class="h2 mb-0 text-success" th:text="${totalUsers ?: 0}">0</div>
+                            <small class="text-success"><i class="bi bi-arrow-up"></i> +5% tháng này</small>
+                        </div>
+                        <div class="display-4 text-success opacity-25">
+                            <i class="bi bi-people-fill"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <div class="text-muted small text-uppercase">Đơn hàng</div>
+                            <div class="h2 mb-0 text-warning" th:text="${totalOrders ?: 0}">0</div>
+                            <small class="text-muted"><i class="bi bi-dash"></i> Chưa có dữ liệu</small>
+                        </div>
+                        <div class="display-4 text-warning opacity-25">
+                            <i class="bi bi-cart-check-fill"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <div class="text-muted small text-uppercase">Danh mục</div>
+                            <div class="h2 mb-0 text-info" th:text="${totalCategories ?: 0}">0</div>
+                            <small class="text-success"><i class="bi bi-arrow-up"></i> +2 danh mục mới</small>
+                        </div>
+                        <div class="display-4 text-info opacity-25">
+                            <i class="bi bi-tags-fill"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Order Status Stats -->
+    <div class="row g-4 mb-4">
+        <div class="col-lg-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0"><i class="bi bi-cart-check text-success"></i> Trạng thái đơn hàng</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-2">
+                            <div class="text-center p-3 bg-warning bg-opacity-10 rounded">
+                                <h4 class="text-warning mb-1" th:text="${pendingOrders ?: 0}">0</h4>
+                                <small class="text-muted">Chờ xác nhận</small>
+                            </div>
+                        </div>
+                        <div class="col-md-2">
+                            <div class="text-center p-3 bg-info bg-opacity-10 rounded">
+                                <h4 class="text-info mb-1" th:text="${confirmedOrders ?: 0}">0</h4>
+                                <small class="text-muted">Đã xác nhận</small>
+                            </div>
+                        </div>
+                        <div class="col-md-2">
+                            <div class="text-center p-3 bg-primary bg-opacity-10 rounded">
+                                <h4 class="text-primary mb-1" th:text="${shippingOrders ?: 0}">0</h4>
+                                <small class="text-muted">Đang giao</small>
+                            </div>
+                        </div>
+                        <div class="col-md-2">
+                            <div class="text-center p-3 bg-success bg-opacity-10 rounded">
+                                <h4 class="text-success mb-1" th:text="${completedOrders ?: 0}">0</h4>
+                                <small class="text-muted">Hoàn thành</small>
+                            </div>
+                        </div>
+                        <div class="col-md-2">
+                            <div class="text-center p-3 bg-danger bg-opacity-10 rounded">
+                                <h4 class="text-danger mb-1" th:text="${cancelledOrders ?: 0}">0</h4>
+                                <small class="text-muted">Đã hủy</small>
+                            </div>
+                        </div>
+                        <div class="col-md-2">
+                            <div class="text-center p-3 bg-dark bg-opacity-10 rounded">
+                                <h4 class="text-dark mb-1" th:text="${totalOrders ?: 0}">0</h4>
+                                <small class="text-muted">Tổng đơn</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Voucher Stats -->
+    <div class="row g-4 mb-4">
+        <div class="col-lg-6">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <div class="text-muted small text-uppercase">Tổng voucher</div>
+                            <div class="h2 mb-0" style="color: #9b59b6;" th:text="${totalVouchers ?: 0}">0</div>
+                            <small class="text-info"><i class="bi bi-ticket-perforated"></i> Tất cả mã giảm giá</small>
+                        </div>
+                        <div class="display-4 opacity-25" style="color: #9b59b6;">
+                            <i class="bi bi-ticket-detailed-fill"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-6">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <div class="text-muted small text-uppercase">Voucher khả dụng</div>
+                            <div class="h2 mb-0 text-success" th:text="${validVouchers ?: 0}">0</div>
+                            <small class="text-success"><i class="bi bi-check-circle"></i> Đang hoạt động</small>
+                        </div>
+                        <div class="display-4 text-success opacity-25">
+                            <i class="bi bi-ticket-perforated-fill"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts & Tables -->
+    <div class="row g-4">
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white border-bottom">
+                    <h5 class="mb-0"><i class="bi bi-graph-up text-primary"></i> Sản phẩm mới nhất</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle">
+                            <thead class="table-light">
+                                <tr>
+                                    <th width="8%">ID</th>
+                                    <th width="35%">Tên sách</th>
+                                    <th width="25%">Tác giả</th>
+                                    <th width="17%" class="text-end">Giá</th>
+                                    <th width="15%">Danh mục</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr th:each="book : ${recentBooks}">
+                                    <td><strong th:text="${book.id}">1</strong></td>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <i class="bi bi-book text-primary me-2"></i>
+                                            <span th:text="${book.title}">Clean Code</span>
+                                        </div>
+                                    </td>
+                                    <td th:text="${book.author}">Robert Martin</td>
+                                    <td class="text-end">
+                                        <strong th:text="${#numbers.formatDecimal(book.price, 0, 0)} + 'đ'">350,000đ</strong>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-primary" th:text="${book.category?.name ?: 'N/A'}">IT</span>
+                                    </td>
+                                </tr>
+                                <tr th:if="${recentBooks == null || #lists.isEmpty(recentBooks)}">
+                                    <td colspan="5" class="text-center py-5">
+                                        <i class="bi bi-inbox text-muted" style="font-size: 48px;"></i>
+                                        <p class="text-muted mt-3">Chưa có sản phẩm nào trong hệ thống</p>
+                                        <a th:href="@{/books/add}" class="btn btn-primary btn-sm">
+                                            <i class="bi bi-plus-circle"></i> Thêm sản phẩm đầu tiên
+                                        </a>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="text-center mt-3" th:if="${recentBooks != null && !#lists.isEmpty(recentBooks)}">
+                        <a th:href="@{/admin/products}" class="btn btn-outline-primary">
+                            <i class="bi bi-arrow-right"></i> Xem tất cả sản phẩm
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white border-bottom">
+                    <h5 class="mb-0"><i class="bi bi-activity text-success"></i> Hoạt động gần đây</h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex gap-3 mb-3 pb-3 border-bottom">
+                        <div class="bg-primary bg-opacity-10 text-primary rounded-circle d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+                            <i class="bi bi-plus-circle-fill"></i>
+                        </div>
+                        <div class="flex-grow-1">
+                            <div class="fw-semibold">Thêm sản phẩm mới</div>
+                            <div class="text-muted small">
+                                <i class="bi bi-clock"></i> 5 phút trước
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="d-flex gap-3 mb-3 pb-3 border-bottom">
+                        <div class="bg-success bg-opacity-10 text-success rounded-circle d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+                            <i class="bi bi-person-plus-fill"></i>
+                        </div>
+                        <div class="flex-grow-1">
+                            <div class="fw-semibold">Người dùng mới đăng ký</div>
+                            <div class="text-muted small">
+                                <i class="bi bi-clock"></i> 15 phút trước
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="d-flex gap-3 mb-3 pb-3 border-bottom">
+                        <div class="bg-warning bg-opacity-10 text-warning rounded-circle d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+                            <i class="bi bi-cart-fill"></i>
+                        </div>
+                        <div class="flex-grow-1">
+                            <div class="fw-semibold">Đơn hàng mới</div>
+                            <div class="text-muted small">
+                                <i class="bi bi-clock"></i> 30 phút trước
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="d-flex gap-3 mb-3 pb-3 border-bottom">
+                        <div class="bg-info bg-opacity-10 text-info rounded-circle d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+                            <i class="bi bi-pencil-square"></i>
+                        </div>
+                        <div class="flex-grow-1">
+                            <div class="fw-semibold">Cập nhật thông tin sản phẩm</div>
+                            <div class="text-muted small">
+                                <i class="bi bi-clock"></i> 1 giờ trước
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="d-flex gap-3">
+                        <div class="bg-danger bg-opacity-10 text-danger rounded-circle d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+                            <i class="bi bi-trash-fill"></i>
+                        </div>
+                        <div class="flex-grow-1">
+                            <div class="fw-semibold">Xóa sản phẩm hết hàng</div>
+                            <div class="text-muted small">
+                                <i class="bi bi-clock"></i> 2 giờ trước
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="card border-0 shadow-sm mt-4">
+                <div class="card-header bg-white border-bottom">
+                    <h5 class="mb-0"><i class="bi bi-lightning-fill text-warning"></i> Thao tác nhanh</h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <a th:href="@{/books/add}" class="btn btn-primary">
+                            <i class="bi bi-plus-circle"></i> Thêm sản phẩm mới
+                        </a>
+                        <a th:href="@{/admin/vouchers/add}" class="btn btn-outline-secondary" style="border-color: #9b59b6; color: #9b59b6;">
+                            <i class="bi bi-ticket-perforated"></i> Tạo voucher mới
+                        </a>
+                        <a th:href="@{/admin/users}" class="btn btn-outline-success">
+                            <i class="bi bi-people"></i> Quản lý người dùng
+                        </a>
+                        <a th:href="@{/admin/chat}" class="btn btn-outline-info">
+                            <i class="bi bi-chat-dots"></i> Trò chuyện khách hàng
+                        </a>
+                        <a th:href="@{/admin/reports}" class="btn btn-outline-warning">
+                            <i class="bi bi-graph-up"></i> Xem báo cáo
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <script th:src="@{/js/bootstrap.min.js}"></script>
+</body>
+</html>

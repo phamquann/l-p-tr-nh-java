@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🚫 Truy Cập Bị Từ Chối</title>
+    <th:block th:replace="~{layout::link-css}"></th:block>
+    <style>
+        body {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .error-container {
+            background: white;
+            border-radius: 20px;
+            padding: 60px 40px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            max-width: 500px;
+            width: 100%;
+            text-align: center;
+        }
+        .error-icon {
+            font-size: 80px;
+            margin-bottom: 20px;
+        }
+        .error-container h1 {
+            color: #f5576c;
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+        .error-container p {
+            color: #6c757d;
+            margin-bottom: 30px;
+        }
+        .btn-home {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            border-radius: 10px;
+            padding: 12px 30px;
+            color: white;
+            font-weight: 600;
+            text-decoration: none;
+            display: inline-block;
+            transition: all 0.3s ease;
+        }
+        .btn-home:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div class="error-container">
+        <div class="error-icon">🚫</div>
+        <h1>Truy Cập Bị Từ Chối</h1>
+        <p>Bạn không có quyền truy cập vào trang này.<br>
+           Vui lòng liên hệ quản trị viên nếu bạn nghĩ đây là lỗi.</p>
+        <a th:href="@{/books}" class="btn-home">↩️ Quay lại trang chủ</a>
+    </div>
+</body>
+</html>

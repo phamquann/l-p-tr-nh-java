@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🛒 Giỏ Hàng - HUTECH</title>
+    <th:block th:replace="~{layout::link-css}"></th:block>
+    <th:block th:replace="~{layout::custom-css}"></th:block>
+</head>
+
+<body>
+
+<th:block th:replace="~{layout::header}"></th:block>
+
+<div class="container">
+    <!-- Alert Messages -->
+    <div th:if="${successMessage}" class="alert alert-success alert-dismissible fade show" role="alert">
+        <strong>✅ Thành công!</strong> <span th:text="${successMessage}"></span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+    
+    <div th:if="${errorMessage}" class="alert alert-danger alert-dismissible fade show" role="alert">
+        <strong>❌ Lỗi!</strong> <span th:text="${errorMessage}"></span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+
+    <!-- Page Header -->
+    <div class="page-header-section">
+        <div class="header-content">
+            <h1 class="page-title">🛒 Giỏ Hàng Của Bạn</h1>
+            <p class="page-description">
+                <span class="badge bg-primary" th:text="'Tổng: ' + ${totalItems} + ' sản phẩm'"></span>
+            </p>
+        </div>
+        <a href="/books" class="btn-add-new">
+            ← Tiếp Tục Mua Sắm
+        </a>
+    </div>
+
+    <!-- Cart Content -->
+    <div th:if="${cart.items.isEmpty()}" class="empty-state-cart">
+        <div class="empty-cart-icon">🛒</div>
+        <h2 class="empty-cart-title">Giỏ hàng trống</h2>
+        <p class="empty-cart-text">Hãy thêm sách yêu thích vào giỏ hàng của bạn!</p>
+        <a href="/books" class="btn-shopping">📚 Khám Phá Sách Ngay</a>
+    </div>
+
+    <div th:if="${!cart.items.isEmpty()}" class="cart-content">
+        <!-- Cart Items -->
+        <div class="cart-items-container">
+            <h3 class="section-title">📦 Sản phẩm trong giỏ</h3>
+            <div class="cart-item" th:each="item : ${cart.items}">
+                <div class="item-image">
+                    <span class="book-icon-large">📚</span>
+                </div>
+                <div class="item-details">
+                    <h4 class="item-title" th:text="${item.title}">Tên sách</h4>
+                    <p class="item-author">
+                        <span class="author-label">Tác giả:</span> 
+                        <span th:text="${item.author}">Tác giả</span>
+                    </p>
+                    <div class="item-price">
+                        <span class="price-label">Đơn giá:</span>
+                        <span class="price-amount" th:text="${#numbers.formatDecimal(item.price, 1, 2)} + ' đ'">0 đ</span>
+                    </div>
+                </div>
+                <div class="item-quantity">
+                    <label class="quantity-label">Số lượng</label>
+                    <form th:action="@{/cart/update/{id}(id=${item.bookId})}" method="post" class="quantity-form">
+                        <div class="quantity-control">
+                            <button type="button" class="qty-btn qty-minus" onclick="decreaseQty(this)">−</button>
+                            <input type="number" name="quantity" th:value="${item.quantity}" 
+                                   min="1" max="99" class="qty-input" readonly>
+                            <button type="button" class="qty-btn qty-plus" onclick="increaseQty(this)">+</button>
+                        </div>
+                        <button type="submit" class="btn-update-qty">Cập nhật</button>
+                    </form>
+                </div>
+                <div class="item-subtotal">
+                    <div class="subtotal-label">Thành tiền</div>
+                    <div class="subtotal-amount" th:text="${#numbers.formatDecimal(item.subTotal, 1, 2)} + ' đ'">0 đ</div>
+                </div>
+                <div class="item-remove">
+                    <a th:href="@{/cart/remove/{id}(id=${item.bookId})}" 
+                       class="btn-remove"
+                       onclick="return confirm('🗑️ Bạn có chắc muốn xóa sản phẩm này?')"
+                       title="Xóa sản phẩm">
+                        <span class="remove-icon">✕</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Order Summary -->
+        <div class="order-summary">
+            <h3 class="summary-title">💰 Tổng Đơn Hàng</h3>
+            <div class="summary-content">
+                <div class="summary-row">
+                    <span class="summary-label">Tạm tính (<span th:text="${totalItems}">0</span> sản phẩm):</span>
+                    <span class="summary-value" th:text="${#numbers.formatDecimal(totalPrice, 1, 2)} + ' đ'">0 đ</span>
+                </div>
+                <div class="summary-row">
+                    <span class="summary-label">Phí vận chuyển:</span>
+                    <span class="summary-value text-success">Miễn phí</span>
+                </div>
+                <div class="summary-divider"></div>
+                <div class="summary-row summary-total">
+                    <span class="summary-label-total">Tổng cộng:</span>
+                    <span class="summary-value-total" th:text="${#numbers.formatDecimal(totalPrice, 1, 2)} + ' đ'">0 đ</span>
+                </div>
+                
+                <a th:href="@{/cart/checkout}" class="btn-checkout" style="display: block; text-align: center; text-decoration: none;">
+                    💳 Tiến Hành Thanh Toán
+                </a>
+                
+                <a href="/cart/clear" class="btn-clear-cart" 
+                   onclick="return confirm('⚠️ Bạn có chắc muốn xóa toàn bộ giỏ hàng?')">
+                    🗑️ Xóa Tất Cả
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<th:block th:replace="~{layout::footer}"></th:block>
+
+<script>
+function decreaseQty(btn) {
+    const input = btn.parentElement.querySelector('.qty-input');
+    const currentVal = parseInt(input.value);
+    if (currentVal > 1) {
+        input.value = currentVal - 1;
+    }
+}
+
+function increaseQty(btn) {
+    const input = btn.parentElement.querySelector('.qty-input');
+    const currentVal = parseInt(input.value);
+    if (currentVal < 99) {
+        input.value = currentVal + 1;
+    }
+}
+</script>
+
+</body>
+</html>

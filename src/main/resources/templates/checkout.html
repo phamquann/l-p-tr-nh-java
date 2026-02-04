@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security" lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>💳 Thanh Toán - HUTECH Bookstore</title>
+    <th:block th:replace="~{layout::link-css}"></th:block>
+    <th:block th:replace="~{layout::custom-css}"></th:block>
+    <style>
+        .checkout-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .checkout-header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding: 30px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 20px;
+            color: white;
+        }
+        
+        .checkout-header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+        
+        .checkout-content {
+            display: grid;
+            grid-template-columns: 1fr 400px;
+            gap: 30px;
+        }
+        
+        @media (max-width: 992px) {
+            .checkout-content {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        .checkout-form-section {
+            background: white;
+            border-radius: 16px;
+            padding: 30px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+        }
+        
+        .section-title {
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: #333;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-label {
+            display: block;
+            font-weight: 600;
+            color: #444;
+            margin-bottom: 8px;
+        }
+        
+        .form-label .required {
+            color: #e74c3c;
+        }
+        
+        .form-control {
+            width: 100%;
+            padding: 14px 16px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+        
+        .form-control:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+            outline: none;
+        }
+        
+        textarea.form-control {
+            resize: vertical;
+            min-height: 100px;
+        }
+        
+        .use-profile-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 20px;
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-bottom: 20px;
+            transition: all 0.3s ease;
+        }
+        
+        .use-profile-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(17, 153, 142, 0.4);
+        }
+        
+        .order-summary-section {
+            background: white;
+            border-radius: 16px;
+            padding: 30px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            height: fit-content;
+            position: sticky;
+            top: 20px;
+        }
+        
+        .order-items {
+            max-height: 300px;
+            overflow-y: auto;
+            margin-bottom: 20px;
+        }
+        
+        .order-item {
+            display: flex;
+            gap: 15px;
+            padding: 12px 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        
+        .order-item:last-child {
+            border-bottom: none;
+        }
+        
+        .order-item-icon {
+            font-size: 2rem;
+        }
+        
+        .order-item-info {
+            flex: 1;
+        }
+        
+        .order-item-title {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 4px;
+        }
+        
+        .order-item-qty {
+            font-size: 0.9rem;
+            color: #666;
+        }
+        
+        .order-item-price {
+            font-weight: 700;
+            color: #667eea;
+            white-space: nowrap;
+        }
+        
+        .summary-divider {
+            height: 2px;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            margin: 20px 0;
+            border-radius: 1px;
+        }
+        
+        .summary-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 12px;
+            color: #555;
+        }
+        
+        .summary-total {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: #333;
+        }
+        
+        .summary-total .total-price {
+            color: #e74c3c;
+        }
+        
+        .btn-place-order {
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 1.2rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 20px;
+        }
+        
+        .btn-place-order:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+        }
+        
+        .btn-back {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 600;
+            margin-bottom: 20px;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-back:hover {
+            color: #764ba2;
+        }
+        
+        .payment-methods {
+            margin-top: 25px;
+            padding-top: 20px;
+            border-top: 1px solid #f0f0f0;
+        }
+        
+        .payment-option {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .payment-option:hover,
+        .payment-option.selected {
+            border-color: #667eea;
+            background: rgba(102, 126, 234, 0.05);
+        }
+        
+        .payment-option input[type="radio"] {
+            accent-color: #667eea;
+            width: 20px;
+            height: 20px;
+        }
+        
+        .payment-icon {
+            font-size: 1.5rem;
+        }
+        
+        .payment-info h5 {
+            margin: 0;
+            font-weight: 600;
+        }
+        
+        .payment-info p {
+            margin: 0;
+            font-size: 0.9rem;
+            color: #666;
+        }
+        
+        .secure-badge {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            color: #27ae60;
+            font-size: 0.9rem;
+            margin-top: 15px;
+        }
+    </style>
+</head>
+
+<body>
+
+<th:block th:replace="~{layout::header}"></th:block>
+
+<div class="checkout-container">
+    <!-- Flash Messages -->
+    <div th:if="${errorMessage}" class="alert alert-danger alert-dismissible fade show" role="alert">
+        <strong>❌ Lỗi!</strong> <span th:text="${errorMessage}"></span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+    
+    <!-- Back Button -->
+    <a th:href="@{/cart}" class="btn-back">
+        ← Quay lại giỏ hàng
+    </a>
+    
+    <!-- Checkout Header -->
+    <div class="checkout-header">
+        <h1>💳 Thanh Toán Đơn Hàng</h1>
+        <p>Hoàn tất thông tin giao hàng để đặt hàng</p>
+    </div>
+    
+    <form th:action="@{/cart/checkout}" method="post">
+        <div class="checkout-content">
+            <!-- Left: Form Section -->
+            <div class="checkout-form-section">
+                <h3 class="section-title">📦 Thông Tin Giao Hàng</h3>
+                
+                <!-- Use Profile Button -->
+                <div sec:authorize="isAuthenticated()">
+                    <button type="button" class="use-profile-btn" onclick="useProfileData()">
+                        ✨ Sử dụng thông tin từ hồ sơ
+                    </button>
+                </div>
+                
+                <!-- Customer Name -->
+                <div class="form-group">
+                    <label class="form-label">
+                        👤 Họ và tên <span class="required">*</span>
+                    </label>
+                    <input type="text" name="customerName" id="customerName" class="form-control" 
+                           th:value="${user != null ? user.fullName : ''}"
+                           placeholder="Nhập họ và tên người nhận..." required>
+                </div>
+                
+                <!-- Phone -->
+                <div class="form-group">
+                    <label class="form-label">
+                        📱 Số điện thoại <span class="required">*</span>
+                    </label>
+                    <input type="tel" name="customerPhone" id="customerPhone" class="form-control" 
+                           th:value="${user != null ? user.phone : ''}"
+                           placeholder="Nhập số điện thoại liên hệ..." required
+                           pattern="[0-9]{10,11}">
+                </div>
+                
+                <!-- Email -->
+                <div class="form-group">
+                    <label class="form-label">
+                        📧 Email <span class="required">*</span>
+                    </label>
+                    <input type="email" name="customerEmail" id="customerEmail" class="form-control" 
+                           th:value="${user != null ? user.email : ''}"
+                           placeholder="Nhập email để nhận thông báo đơn hàng..." required>
+                </div>
+                
+                <!-- Address -->
+                <div class="form-group">
+                    <label class="form-label">
+                        🏠 Địa chỉ giao hàng <span class="required">*</span>
+                    </label>
+                    <textarea name="customerAddress" id="customerAddress" class="form-control" 
+                              placeholder="Nhập địa chỉ chi tiết (số nhà, đường, phường/xã, quận/huyện, tỉnh/thành phố)..." 
+                              required></textarea>
+                </div>
+                
+                <!-- Note -->
+                <div class="form-group">
+                    <label class="form-label">
+                        📝 Ghi chú đơn hàng
+                    </label>
+                    <textarea name="orderNote" id="orderNote" class="form-control" 
+                              placeholder="Ghi chú thêm cho đơn hàng (không bắt buộc)..."></textarea>
+                </div>
+                
+                <!-- Payment Methods -->
+                <div class="payment-methods">
+                    <h4 class="section-title" style="font-size: 1.2rem;">💰 Phương Thức Thanh Toán</h4>
+                    
+                    <label class="payment-option selected">
+                        <input type="radio" name="paymentMethod" value="COD" checked>
+                        <span class="payment-icon">💵</span>
+                        <div class="payment-info">
+                            <h5>Thanh toán khi nhận hàng (COD)</h5>
+                            <p>Thanh toán bằng tiền mặt khi nhận được hàng</p>
+                        </div>
+                    </label>
+                    
+                    <label class="payment-option">
+                        <input type="radio" name="paymentMethod" value="BANK">
+                        <span class="payment-icon">🏦</span>
+                        <div class="payment-info">
+                            <h5>Chuyển khoản ngân hàng</h5>
+                            <p>Chuyển khoản trước khi giao hàng</p>
+                        </div>
+                    </label>
+                </div>
+            </div>
+            
+            <!-- Right: Order Summary -->
+            <div class="order-summary-section">
+                <h3 class="section-title">🛒 Đơn Hàng Của Bạn</h3>
+                
+                <!-- Order Items -->
+                <div class="order-items">
+                    <div class="order-item" th:each="item : ${cart.items}">
+                        <span class="order-item-icon">📚</span>
+                        <div class="order-item-info">
+                            <div class="order-item-title" th:text="${item.title}">Tên sách</div>
+                            <div class="order-item-qty">Số lượng: <span th:text="${item.quantity}">1</span></div>
+                        </div>
+                        <div class="order-item-price" th:text="${#numbers.formatDecimal(item.subTotal, 1, 0)} + 'đ'">0đ</div>
+                    </div>
+                </div>
+                
+                <div class="summary-divider"></div>
+
+                <!-- Voucher Code -->
+                <div class="form-group">
+                    <label class="form-label">🎫 Mã voucher</label>
+                    <div class="input-group">
+                        <input type="text" name="voucherCode" id="voucherCode" class="form-control"
+                               th:value="${voucherCode}" placeholder="Nhập mã voucher (nếu có)">
+                        <button type="button" class="btn btn-outline-primary" id="applyVoucherBtn">Áp dụng mã</button>
+                    </div>
+                    <small class="text-muted" id="voucherMessage"></small>
+                </div>
+                
+                <!-- Summary -->
+                <div class="summary-row">
+                    <span>Tạm tính:</span>
+                    <span th:text="${#numbers.formatDecimal(totalPrice, 1, 0)} + 'đ'">0đ</span>
+                </div>
+                <div class="summary-row">
+                    <span>Phí vận chuyển:</span>
+                    <span class="text-success">Miễn phí</span>
+                </div>
+                <div class="summary-row" id="discountRow" style="display: none;">
+                    <span>Giảm giá:</span>
+                    <span class="text-success" id="discountAmount">0đ</span>
+                </div>
+                
+                <div class="summary-divider"></div>
+                
+                <div class="summary-row summary-total">
+                    <span>Tổng cộng:</span>
+                    <span class="total-price" id="finalTotal" th:text="${#numbers.formatDecimal(totalPrice, 1, 0)} + 'đ'">0đ</span>
+                </div>
+                
+                <!-- Place Order Button -->
+                <button type="submit" class="btn-place-order">
+                    🛍️ Đặt Hàng Ngay
+                </button>
+                
+                <div class="secure-badge">
+                    🔒 Thanh toán an toàn & bảo mật
+                </div>
+            </div>
+        </div>
+    </form>
+    <input type="hidden" id="csrfToken" th:value="${_csrf.token}">
+    <input type="hidden" id="csrfHeader" th:value="${_csrf.headerName}">
+</div>
+
+<th:block th:replace="~{layout::footer}"></th:block>
+
+<script>
+    // Highlight selected payment option
+    document.querySelectorAll('.payment-option').forEach(option => {
+        option.addEventListener('click', function() {
+            document.querySelectorAll('.payment-option').forEach(o => o.classList.remove('selected'));
+            this.classList.add('selected');
+        });
+    });
+    
+    // Use profile data
+    function useProfileData() {
+        // Data will be pre-filled from server-side Thymeleaf
+        // This button just confirms and can scroll to form
+        document.getElementById('customerName').focus();
+    }
+
+    // Apply voucher
+    const applyVoucherBtn = document.getElementById('applyVoucherBtn');
+    if (applyVoucherBtn) {
+        applyVoucherBtn.addEventListener('click', function() {
+            const code = document.getElementById('voucherCode').value.trim();
+            const msg = document.getElementById('voucherMessage');
+            const discountRow = document.getElementById('discountRow');
+            const discountAmount = document.getElementById('discountAmount');
+            const finalTotal = document.getElementById('finalTotal');
+
+            if (!code) {
+                msg.textContent = 'Vui lòng nhập mã voucher.';
+                msg.className = 'text-danger';
+                return;
+            }
+
+            const csrfTokenEl = document.getElementById('csrfToken');
+            const csrfHeaderEl = document.getElementById('csrfHeader');
+            const headers = {
+                'Content-Type': 'application/x-www-form-urlencoded'
+            };
+            if (csrfTokenEl && csrfHeaderEl) {
+                headers[csrfHeaderEl.value] = csrfTokenEl.value;
+            }
+
+            fetch('/cart/checkout/apply-voucher', {
+                method: 'POST',
+                headers,
+                body: 'voucherCode=' + encodeURIComponent(code)
+            })
+            .then(r => r.json())
+            .then(data => {
+                if (data.valid) {
+                    msg.textContent = data.message;
+                    msg.className = 'text-success';
+                    discountRow.style.display = 'flex';
+                    discountAmount.textContent = data.discountFormatted;
+                    finalTotal.textContent = data.finalTotalFormatted;
+                } else {
+                    msg.textContent = data.message;
+                    msg.className = 'text-danger';
+                    discountRow.style.display = 'none';
+                    finalTotal.textContent = data.finalTotalFormatted;
+                }
+            })
+            .catch(() => {
+                msg.textContent = 'Có lỗi khi áp dụng voucher.';
+                msg.className = 'text-danger';
+            });
+        });
+    }
+</script>
+
+</body>
+</html>

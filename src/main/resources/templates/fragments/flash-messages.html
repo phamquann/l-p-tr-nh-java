@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" 
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security" 
+      lang="vi">
+<head>
+    <meta charset="UTF-8">
+</head>
+<body>
+
+<!-- Flash Messages Fragment -->
+<div th:fragment="flash-messages" class="flash-messages-container">
+    <!-- Success Message -->
+    <div th:if="${successMessage}" 
+         class="alert alert-success alert-dismissible fade show flash-message" 
+         role="alert">
+        <i class="bi bi-check-circle-fill me-2"></i>
+        <strong>Thành công!</strong> <span th:text="${successMessage}"></span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+
+    <!-- Error Message -->
+    <div th:if="${errorMessage}" 
+         class="alert alert-danger alert-dismissible fade show flash-message" 
+         role="alert">
+        <i class="bi bi-exclamation-triangle-fill me-2"></i>
+        <strong>Lỗi!</strong> <span th:text="${errorMessage}"></span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+
+    <!-- Warning Message -->
+    <div th:if="${warningMessage}" 
+         class="alert alert-warning alert-dismissible fade show flash-message" 
+         role="alert">
+        <i class="bi bi-exclamation-circle-fill me-2"></i>
+        <strong>Cảnh báo!</strong> <span th:text="${warningMessage}"></span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+
+    <!-- Info Message -->
+    <div th:if="${infoMessage}" 
+         class="alert alert-info alert-dismissible fade show flash-message" 
+         role="alert">
+        <i class="bi bi-info-circle-fill me-2"></i>
+        <strong>Thông tin!</strong> <span th:text="${infoMessage}"></span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+</div>
+
+<style>
+    .flash-messages-container {
+        position: fixed;
+        top: 80px;
+        right: 20px;
+        z-index: 9999;
+        min-width: 350px;
+        max-width: 500px;
+    }
+    
+    .flash-message {
+        animation: slideInRight 0.5s ease-out;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        border-radius: 10px;
+        border-left-width: 5px;
+    }
+    
+    @keyframes slideInRight {
+        from {
+            transform: translateX(100%);
+            opacity: 0;
+        }
+        to {
+            transform: translateX(0);
+            opacity: 1;
+        }
+    }
+    
+    @keyframes slideOutRight {
+        from {
+            transform: translateX(0);
+            opacity: 1;
+        }
+        to {
+            transform: translateX(100%);
+            opacity: 0;
+        }
+    }
+    
+    .flash-message.fade-out {
+        animation: slideOutRight 0.5s ease-out forwards;
+    }
+</style>
+
+<script>
+    // Auto-dismiss flash messages after 5 seconds
+    document.addEventListener('DOMContentLoaded', function() {
+        const flashMessages = document.querySelectorAll('.flash-message');
+        
+        flashMessages.forEach(function(message) {
+            setTimeout(function() {
+                message.classList.add('fade-out');
+                setTimeout(function() {
+                    message.remove();
+                }, 500);
+            }, 5000);
+        });
+    });
+</script>
+
+</body>
+</html>

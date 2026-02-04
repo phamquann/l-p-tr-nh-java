@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" 
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security" 
+      lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>📦 Đơn Hàng Của Tôi - HUTECH</title>
+    <th:block th:replace="~{layout::link-css}"></th:block>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        
+        .orders-container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 30px 20px;
+        }
+        
+        .page-header {
+            color: white;
+            margin-bottom: 30px;
+        }
+        
+        .page-header h1 {
+            font-size: 2rem;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        
+        .page-header p {
+            opacity: 0.9;
+        }
+        
+        .back-link {
+            color: white;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 20px;
+            padding: 10px 20px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 50px;
+            transition: all 0.3s ease;
+        }
+        
+        .back-link:hover {
+            background: rgba(255,255,255,0.3);
+            color: white;
+        }
+        
+        .orders-card {
+            background: white;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.2);
+        }
+        
+        .orders-card-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 25px 30px;
+        }
+        
+        .orders-card-header h2 {
+            margin: 0;
+            font-size: 1.5rem;
+        }
+        
+        .orders-card-body {
+            padding: 0;
+        }
+        
+        .order-item {
+            padding: 25px 30px;
+            border-bottom: 1px solid #f0f0f0;
+            transition: all 0.3s ease;
+        }
+        
+        .order-item:hover {
+            background: #f8f9fa;
+        }
+        
+        .order-item:last-child {
+            border-bottom: none;
+        }
+        
+        .order-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        
+        .order-id {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #667eea;
+        }
+        
+        .order-date {
+            color: #888;
+            font-size: 0.9rem;
+        }
+        
+        .order-status {
+            padding: 8px 16px;
+            border-radius: 50px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+        
+        .status-pending {
+            background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
+            color: #b7791f;
+        }
+        
+        .status-confirmed {
+            background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+            color: #2b6cb0;
+        }
+        
+        .status-shipping {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .status-completed {
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+            color: white;
+        }
+        
+        .status-cancelled {
+            background: linear-gradient(135deg, #eb3349 0%, #f45c43 100%);
+            color: white;
+        }
+        
+        .order-info {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 20px;
+            margin-bottom: 15px;
+        }
+        
+        .order-info-item {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .order-info-label {
+            font-size: 0.8rem;
+            color: #888;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 5px;
+        }
+        
+        .order-info-value {
+            font-weight: 600;
+            color: #333;
+        }
+        
+        .order-info-value.total {
+            color: #667eea;
+            font-size: 1.3rem;
+        }
+        
+        .order-actions {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .btn-view-order {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 10px 25px;
+            border-radius: 50px;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-view-order:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+            color: white;
+        }
+        
+        /* Status Timeline */
+        .status-timeline {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px dashed #e0e0e0;
+        }
+        
+        .timeline-step {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+        }
+        
+        .timeline-step::after {
+            content: '';
+            position: absolute;
+            top: 15px;
+            left: 50%;
+            width: 100%;
+            height: 3px;
+            background: #e0e0e0;
+            z-index: 0;
+        }
+        
+        .timeline-step:last-child::after {
+            display: none;
+        }
+        
+        .timeline-dot {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background: #e0e0e0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+            z-index: 1;
+            position: relative;
+        }
+        
+        .timeline-dot.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .timeline-dot.completed {
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+            color: white;
+        }
+        
+        .timeline-label {
+            font-size: 0.7rem;
+            color: #888;
+            margin-top: 5px;
+            text-align: center;
+        }
+        
+        /* Empty State */
+        .empty-orders {
+            text-align: center;
+            padding: 60px 30px;
+        }
+        
+        .empty-icon {
+            font-size: 5rem;
+            margin-bottom: 20px;
+        }
+        
+        .empty-orders h3 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+        
+        .empty-orders p {
+            color: #888;
+            margin-bottom: 20px;
+        }
+        
+        .btn-shop-now {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 50px;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-shop-now:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+            color: white;
+        }
+        
+        @media (max-width: 768px) {
+            .order-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 10px;
+            }
+            
+            .status-timeline {
+                display: none;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<th:block th:replace="~{layout::header}"></th:block>
+
+<div class="orders-container">
+    <a href="/profile" class="back-link">
+        ← Quay lại trang cá nhân
+    </a>
+    
+    <div class="page-header">
+        <h1>📦 Đơn Hàng Của Tôi</h1>
+        <p>Theo dõi trạng thái đơn hàng của bạn</p>
+    </div>
+    
+    <div class="orders-card">
+        <div class="orders-card-header">
+            <h2>🛒 Lịch sử đơn hàng</h2>
+        </div>
+        
+        <div class="orders-card-body">
+            <!-- Empty State -->
+            <div th:if="${orders == null || orders.isEmpty()}" class="empty-orders">
+                <div class="empty-icon">📭</div>
+                <h3>Chưa có đơn hàng nào</h3>
+                <p>Bạn chưa đặt mua sản phẩm nào. Hãy khám phá cửa hàng của chúng tôi!</p>
+                <a href="/books" class="btn-shop-now">📚 Mua sắm ngay</a>
+            </div>
+            
+            <!-- Orders List -->
+            <div th:each="order : ${orders}" class="order-item">
+                <div class="order-header">
+                    <div>
+                        <span class="order-id">Đơn hàng #<span th:text="${order.id}"></span></span>
+                        <span class="order-date">
+                            • <span th:text="${#temporals.format(order.createdAt, 'dd/MM/yyyy HH:mm')}"></span>
+                        </span>
+                    </div>
+                    <span class="order-status"
+                          th:classappend="${order.status == 'PENDING'} ? 'status-pending' : 
+                                          (${order.status == 'CONFIRMED'} ? 'status-confirmed' : 
+                                          (${order.status == 'SHIPPING'} ? 'status-shipping' : 
+                                          (${order.status == 'COMPLETED'} ? 'status-completed' : 'status-cancelled')))"
+                          th:text="${order.status == 'PENDING'} ? '⏳ Chờ xử lý' : 
+                                   (${order.status == 'CONFIRMED'} ? '✅ Đã xác nhận' : 
+                                   (${order.status == 'SHIPPING'} ? '🚚 Đang giao hàng' : 
+                                   (${order.status == 'COMPLETED'} ? '🎉 Hoàn thành' : '❌ Đã hủy')))">
+                        Trạng thái
+                    </span>
+                </div>
+                
+                <div class="order-info">
+                    <div class="order-info-item">
+                        <span class="order-info-label">Địa chỉ giao hàng</span>
+                        <span class="order-info-value" th:text="${order.customerAddress}">Địa chỉ</span>
+                    </div>
+                    <div class="order-info-item">
+                        <span class="order-info-label">Số điện thoại</span>
+                        <span class="order-info-value" th:text="${order.customerPhone}">0123456789</span>
+                    </div>
+                    <div class="order-info-item">
+                        <span class="order-info-label">Tổng tiền</span>
+                        <span class="order-info-value total" th:text="${#numbers.formatDecimal(order.totalAmount, 1, 0)} + 'đ'">0đ</span>
+                    </div>
+                </div>
+                
+                <div class="order-actions">
+                    <a th:href="@{/profile/orders/{id}(id=${order.id})}" class="btn-view-order">
+                        👁️ Xem chi tiết
+                    </a>
+                </div>
+                
+                <!-- Status Timeline -->
+                <div class="status-timeline" th:if="${order.status != 'CANCELLED'}">
+                    <div class="timeline-step">
+                        <div class="timeline-dot completed">✓</div>
+                        <span class="timeline-label">Đặt hàng</span>
+                    </div>
+                    <div class="timeline-step">
+                        <div class="timeline-dot" 
+                             th:classappend="${order.status == 'CONFIRMED' || order.status == 'SHIPPING' || order.status == 'COMPLETED'} ? 'completed' : ''">
+                            <span th:if="${order.status == 'CONFIRMED' || order.status == 'SHIPPING' || order.status == 'COMPLETED'}">✓</span>
+                            <span th:unless="${order.status == 'CONFIRMED' || order.status == 'SHIPPING' || order.status == 'COMPLETED'}">2</span>
+                        </div>
+                        <span class="timeline-label">Xác nhận</span>
+                    </div>
+                    <div class="timeline-step">
+                        <div class="timeline-dot"
+                             th:classappend="${order.status == 'SHIPPING' || order.status == 'COMPLETED'} ? 'completed' : (${order.status == 'CONFIRMED'} ? 'active' : '')">
+                            <span th:if="${order.status == 'SHIPPING' || order.status == 'COMPLETED'}">✓</span>
+                            <span th:unless="${order.status == 'SHIPPING' || order.status == 'COMPLETED'}">3</span>
+                        </div>
+                        <span class="timeline-label">Đang giao</span>
+                    </div>
+                    <div class="timeline-step">
+                        <div class="timeline-dot"
+                             th:classappend="${order.status == 'COMPLETED'} ? 'completed' : (${order.status == 'SHIPPING'} ? 'active' : '')">
+                            <span th:if="${order.status == 'COMPLETED'}">✓</span>
+                            <span th:unless="${order.status == 'COMPLETED'}">4</span>
+                        </div>
+                        <span class="timeline-label">Hoàn thành</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<th:block th:replace="~{layout::footer}"></th:block>
+
+</body>
+</html>

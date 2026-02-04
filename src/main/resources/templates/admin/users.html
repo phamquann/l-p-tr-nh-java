@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security" lang="vi">
+<head th:replace="~{admin/fragments::admin-head}"></head>
+<body>
+    <div class="container-fluid p-0">
+        <div class="row g-0">
+            <nav th:replace="~{admin/fragments::sidebar('users')}"></nav>
+            <main class="main-content">
+                <div th:replace="~{admin/fragments::topbar('👥 Quản lý người dùng', 'Quản lý tài khoản và phân quyền')}"></div>
+                <div class="px-4"><th:block th:replace="~{fragments/flash-messages::flash-messages}"></th:block></div>
+                <div class="container-fluid px-4">
+                    <!-- Stats Cards -->
+                    <div class="row mb-4">
+                        <div class="col-md-4">
+                            <div class="card bg-primary text-white">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <h6 class="mb-0">Tổng người dùng</h6>
+                                            <h2 class="mb-0" th:text="${users != null ? users.size() : 0}">0</h2>
+                                        </div>
+                                        <div style="font-size: 2.5rem; opacity: 0.5;">👥</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="content-card card">
+                        <div class="card-header">
+                            <h5 class="mb-0"><i class="bi bi-people-fill text-primary"></i> Danh sách người dùng</h5>
+                        </div>
+                        <div class="card-body">
+                            <div th:if="${users == null || users.isEmpty()}" class="text-center py-5">
+                                <i class="bi bi-people text-muted" style="font-size: 64px; opacity: 0.3;"></i>
+                                <h5 class="text-muted mt-4">Chưa có người dùng nào</h5>
+                            </div>
+                            
+                            <div th:if="${users != null && !users.isEmpty()}" class="table-responsive">
+                                <table class="table table-hover align-middle">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th width="5%">ID</th>
+                                            <th width="15%">Username</th>
+                                            <th width="22%">Email</th>
+                                            <th width="15%">Họ tên</th>
+                                            <th width="13%">Vai trò</th>
+                                            <th width="12%">Trạng thái</th>
+                                            <th width="18%" class="text-center">Thao tác</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr th:each="user : ${users}">
+                                            <td>
+                                                <span class="badge bg-secondary">#<span th:text="${user.id}">1</span></span>
+                                            </td>
+                                            <td>
+                                                <div class="d-flex align-items-center">
+                                                    <i class="bi bi-person-circle text-primary me-2" style="font-size: 1.5rem;"></i>
+                                                    <span th:text="${user.username}">admin</span>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <small th:text="${user.email}">admin@example.com</small>
+                                            </td>
+                                            <td th:text="${user.fullName != null ? user.fullName : 'Chưa cập nhật'}">Admin User</td>
+                                            <td>
+                                                <th:block th:each="role : ${user.roles}">
+                                                    <span class="badge" 
+                                                          th:classappend="${role.name == 'ROLE_ADMIN' ? 'bg-danger' : 'bg-info'}"
+                                                          th:text="${role.name == 'ROLE_ADMIN' ? '👑 ADMIN' : '👤 USER'}"></span>
+                                                </th:block>
+                                            </td>
+                                            <td>
+                                                <span th:if="${user.enabled}" class="badge bg-success">
+                                                    <i class="bi bi-check-circle"></i> Hoạt động
+                                                </span>
+                                                <span th:unless="${user.enabled}" class="badge bg-secondary">
+                                                    <i class="bi bi-lock"></i> Đã khóa
+                                                </span>
+                                            </td>
+                                            <td class="text-center">
+                                                <div class="btn-group" role="group">
+                                                    <a th:href="@{/admin/users/toggle/{id}(id=${user.id})}" 
+                                                       class="btn btn-sm"
+                                                       th:classappend="${user.enabled ? 'btn-outline-warning' : 'btn-outline-success'}"
+                                                       th:title="${user.enabled ? 'Khóa tài khoản' : 'Mở khóa tài khoản'}">
+                                                        <i th:classappend="${user.enabled ? 'bi bi-lock' : 'bi bi-unlock'}"></i>
+                                                        <span th:text="${user.enabled ? 'Khóa' : 'Mở khóa'}"></span>
+                                                    </a>
+                                                    <a th:href="@{/admin/users/delete/{id}(id=${user.id})}" 
+                                                       class="btn btn-sm btn-outline-danger"
+                                                       onclick="return confirm('⚠️ Bạn có chắc chắn muốn xóa người dùng này?\n\nHành động này không thể hoàn tác!')"
+                                                       title="Xóa người dùng">
+                                                        <i class="bi bi-trash"></i> Xóa
+                                                    </a>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Chú thích -->
+                    <div class="card mt-4">
+                        <div class="card-body">
+                            <h6><i class="bi bi-info-circle text-info"></i> Hướng dẫn:</h6>
+                            <ul class="mb-0 small text-muted">
+                                <li><strong class="text-warning">Khóa</strong> - Vô hiệu hóa tài khoản, người dùng không thể đăng nhập</li>
+                                <li><strong class="text-success">Mở khóa</strong> - Kích hoạt lại tài khoản</li>
+                                <li><strong class="text-danger">Xóa</strong> - Xóa vĩnh viễn người dùng khỏi hệ thống</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+    <script th:src="@{/js/bootstrap.min.js}"></script>
+</body>
+</html>

@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security" lang="vi">
+<head th:replace="~{admin/fragments::admin-head}"></head>
+<body>
+    <div class="container-fluid p-0">
+        <div class="row g-0">
+            <nav th:replace="~{admin/fragments::sidebar('orders')}"></nav>
+            <main class="main-content">
+                <div th:replace="~{admin/fragments::topbar('🛒 Quản lý đơn hàng', 'Theo dõi và xử lý đơn hàng')}"></div>
+                <div class="px-4"><th:block th:replace="~{fragments/flash-messages::flash-messages}"></th:block></div>
+                
+                <div class="container-fluid px-4">
+                    <!-- Status Filter Cards -->
+                    <div class="row mb-4">
+                        <div class="col-md-2">
+                            <a th:href="@{/admin/orders}" class="text-decoration-none">
+                                <div class="card status-card" th:classappend="${selectedStatus == null} ? 'active' : ''">
+                                    <div class="card-body text-center py-3">
+                                        <div class="status-icon">📋</div>
+                                        <div class="status-label">Tất cả</div>
+                                        <div class="status-count" th:text="${orders != null ? orders.size() : 0}">0</div>
+                                    </div>
+                                </div>
+                            </a>
+                        </div>
+                        <div class="col-md-2">
+                            <a th:href="@{/admin/orders(status='PENDING')}" class="text-decoration-none">
+                                <div class="card status-card pending" th:classappend="${selectedStatus == 'PENDING'} ? 'active' : ''">
+                                    <div class="card-body text-center py-3">
+                                        <div class="status-icon">⏳</div>
+                                        <div class="status-label">Chờ xử lý</div>
+                                        <div class="status-count" th:text="${pendingCount}">0</div>
+                                    </div>
+                                </div>
+                            </a>
+                        </div>
+                        <div class="col-md-2">
+                            <a th:href="@{/admin/orders(status='CONFIRMED')}" class="text-decoration-none">
+                                <div class="card status-card confirmed" th:classappend="${selectedStatus == 'CONFIRMED'} ? 'active' : ''">
+                                    <div class="card-body text-center py-3">
+                                        <div class="status-icon">✅</div>
+                                        <div class="status-label">Đã xác nhận</div>
+                                        <div class="status-count" th:text="${confirmedCount}">0</div>
+                                    </div>
+                                </div>
+                            </a>
+                        </div>
+                        <div class="col-md-2">
+                            <a th:href="@{/admin/orders(status='SHIPPING')}" class="text-decoration-none">
+                                <div class="card status-card shipping" th:classappend="${selectedStatus == 'SHIPPING'} ? 'active' : ''">
+                                    <div class="card-body text-center py-3">
+                                        <div class="status-icon">🚚</div>
+                                        <div class="status-label">Đang giao</div>
+                                        <div class="status-count" th:text="${shippingCount}">0</div>
+                                    </div>
+                                </div>
+                            </a>
+                        </div>
+                        <div class="col-md-2">
+                            <a th:href="@{/admin/orders(status='COMPLETED')}" class="text-decoration-none">
+                                <div class="card status-card completed" th:classappend="${selectedStatus == 'COMPLETED'} ? 'active' : ''">
+                                    <div class="card-body text-center py-3">
+                                        <div class="status-icon">🎉</div>
+                                        <div class="status-label">Hoàn thành</div>
+                                        <div class="status-count" th:text="${completedCount}">0</div>
+                                    </div>
+                                </div>
+                            </a>
+                        </div>
+                        <div class="col-md-2">
+                            <a th:href="@{/admin/orders(status='CANCELLED')}" class="text-decoration-none">
+                                <div class="card status-card cancelled" th:classappend="${selectedStatus == 'CANCELLED'} ? 'active' : ''">
+                                    <div class="card-body text-center py-3">
+                                        <div class="status-icon">❌</div>
+                                        <div class="status-label">Đã hủy</div>
+                                        <div class="status-count" th:text="${cancelledCount}">0</div>
+                                    </div>
+                                </div>
+                            </a>
+                        </div>
+                    </div>
+                    
+                    <!-- Orders Table -->
+                    <div class="content-card card">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <h5 class="mb-0"><i class="bi bi-cart-check-fill text-primary"></i> Danh sách đơn hàng</h5>
+                        </div>
+                        <div class="card-body">
+                            <div th:if="${orders == null || orders.isEmpty()}" class="text-center py-5">
+                                <i class="bi bi-inbox text-muted" style="font-size: 64px; opacity: 0.3;"></i>
+                                <h5 class="text-muted mt-4">Chưa có đơn hàng nào</h5>
+                                <p class="text-muted">Đơn hàng sẽ hiển thị tại đây khi khách hàng đặt mua</p>
+                            </div>
+                            
+                            <div th:if="${orders != null && !orders.isEmpty()}" class="table-responsive">
+                                <table class="table table-hover align-middle">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th width="8%">Mã ĐH</th>
+                                            <th width="18%">Khách hàng</th>
+                                            <th width="15%">Liên hệ</th>
+                                            <th width="12%">Tổng tiền</th>
+                                            <th width="12%">Trạng thái</th>
+                                            <th width="15%">Ngày đặt</th>
+                                            <th width="20%">Thao tác</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr th:each="order : ${orders}">
+                                            <td>
+                                                <span class="fw-bold text-primary">#<span th:text="${order.id}"></span></span>
+                                            </td>
+                                            <td>
+                                                <div class="d-flex align-items-center">
+                                                    <div class="avatar-sm bg-light rounded-circle d-flex align-items-center justify-content-center me-2">
+                                                        👤
+                                                    </div>
+                                                    <div>
+                                                        <div class="fw-semibold" th:text="${order.customerName}">Tên KH</div>
+                                                        <small class="text-muted" th:text="${order.customerEmail}">email@example.com</small>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <div><i class="bi bi-telephone"></i> <span th:text="${order.customerPhone}"></span></div>
+                                            </td>
+                                            <td>
+                                                <span class="fw-bold text-success" th:text="${#numbers.formatDecimal(order.totalAmount, 1, 0)} + 'đ'">0đ</span>
+                                            </td>
+                                            <td>
+                                                <span class="badge rounded-pill status-badge"
+                                                      th:classappend="${order.status == 'PENDING'} ? 'bg-warning text-dark' : 
+                                                                      (${order.status == 'CONFIRMED'} ? 'bg-info' : 
+                                                                      (${order.status == 'SHIPPING'} ? 'bg-primary' : 
+                                                                      (${order.status == 'COMPLETED'} ? 'bg-success' : 'bg-danger')))"
+                                                      th:text="${order.status == 'PENDING'} ? '⏳ Chờ xử lý' : 
+                                                               (${order.status == 'CONFIRMED'} ? '✅ Đã xác nhận' : 
+                                                               (${order.status == 'SHIPPING'} ? '🚚 Đang giao' : 
+                                                               (${order.status == 'COMPLETED'} ? '🎉 Hoàn thành' : '❌ Đã hủy')))">
+                                                    Trạng thái
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <div th:text="${#temporals.format(order.createdAt, 'dd/MM/yyyy')}"></div>
+                                                <small class="text-muted" th:text="${#temporals.format(order.createdAt, 'HH:mm')}"></small>
+                                            </td>
+                                            <td>
+                                                <div class="btn-group" role="group">
+                                                    <a th:href="@{/admin/orders/{id}(id=${order.id})}" class="btn btn-sm btn-outline-info" title="Xem chi tiết">
+                                                        <i class="bi bi-eye"></i>
+                                                    </a>
+                                                    <div class="btn-group" role="group">
+                                                        <button type="button" class="btn btn-sm btn-outline-primary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false" title="Cập nhật trạng thái">
+                                                            <i class="bi bi-arrow-repeat"></i>
+                                                        </button>
+                                                        <ul class="dropdown-menu">
+                                                            <li>
+                                                                <form th:action="@{/admin/orders/{id}/status(id=${order.id})}" method="post">
+                                                                    <input type="hidden" name="status" value="PENDING">
+                                                                    <button type="submit" class="dropdown-item">⏳ Chờ xử lý</button>
+                                                                </form>
+                                                            </li>
+                                                            <li>
+                                                                <form th:action="@{/admin/orders/{id}/status(id=${order.id})}" method="post">
+                                                                    <input type="hidden" name="status" value="CONFIRMED">
+                                                                    <button type="submit" class="dropdown-item">✅ Xác nhận</button>
+                                                                </form>
+                                                            </li>
+                                                            <li>
+                                                                <form th:action="@{/admin/orders/{id}/status(id=${order.id})}" method="post">
+                                                                    <input type="hidden" name="status" value="SHIPPING">
+                                                                    <button type="submit" class="dropdown-item">🚚 Đang giao</button>
+                                                                </form>
+                                                            </li>
+                                                            <li>
+                                                                <form th:action="@{/admin/orders/{id}/status(id=${order.id})}" method="post">
+                                                                    <input type="hidden" name="status" value="COMPLETED">
+                                                                    <button type="submit" class="dropdown-item">🎉 Hoàn thành</button>
+                                                                </form>
+                                                            </li>
+                                                            <li><hr class="dropdown-divider"></li>
+                                                            <li>
+                                                                <form th:action="@{/admin/orders/{id}/status(id=${order.id})}" method="post">
+                                                                    <input type="hidden" name="status" value="CANCELLED">
+                                                                    <button type="submit" class="dropdown-item text-danger">❌ Hủy đơn</button>
+                                                                </form>
+                                                            </li>
+                                                        </ul>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+    
+    <style>
+        .status-card {
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+            cursor: pointer;
+        }
+        
+        .status-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        
+        .status-card.active {
+            border-color: #667eea;
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
+        }
+        
+        .status-card .status-icon {
+            font-size: 2rem;
+            margin-bottom: 5px;
+        }
+        
+        .status-card .status-label {
+            font-size: 0.85rem;
+            color: #666;
+        }
+        
+        .status-card .status-count {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #333;
+        }
+        
+        .status-card.pending .status-count { color: #ffc107; }
+        .status-card.confirmed .status-count { color: #17a2b8; }
+        .status-card.shipping .status-count { color: #007bff; }
+        .status-card.completed .status-count { color: #28a745; }
+        .status-card.cancelled .status-count { color: #dc3545; }
+        
+        .avatar-sm {
+            width: 40px;
+            height: 40px;
+            font-size: 1.2rem;
+        }
+        
+        .status-badge {
+            padding: 8px 12px;
+            font-size: 0.8rem;
+        }
+        
+        .dropdown-item {
+            padding: 8px 16px;
+        }
+        
+        .dropdown-item:hover {
+            background: #f8f9fa;
+        }
+    </style>
+    
+    <script th:src="@{/js/bootstrap.min.js}"></script>
+</body>
+</html>

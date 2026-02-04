@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      th:fragment="chat-widget">
+<head>
+    <style>
+        /* Floating Chat Button */
+        .chat-float-button {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 28px;
+            cursor: pointer;
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+            z-index: 9998;
+            transition: all 0.3s ease;
+        }
+        
+        .chat-float-button:hover {
+            transform: scale(1.1);
+            box-shadow: 0 8px 30px rgba(102, 126, 234, 0.6);
+        }
+        
+        .chat-float-button .badge-count {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            width: 25px;
+            height: 25px;
+            background: #dc3545;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: bold;
+            border: 3px solid white;
+        }
+        
+        /* Chat Widget Window */
+        .chat-widget {
+            position: fixed;
+            bottom: 100px;
+            right: 30px;
+            width: 380px;
+            height: 550px;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.15);
+            z-index: 9999;
+            display: none;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        
+        .chat-widget.active {
+            display: flex;
+        }
+        
+        .chat-widget-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .chat-widget-header h5 {
+            margin: 0;
+            font-size: 18px;
+            font-weight: 600;
+        }
+        
+        .chat-widget-header .close-chat {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 24px;
+            cursor: pointer;
+            padding: 0;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: all 0.3s ease;
+        }
+        
+        .chat-widget-header .close-chat:hover {
+            background: rgba(255,255,255,0.2);
+        }
+        
+        .chat-widget-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+            background: #f8f9fa;
+        }
+        
+        .chat-message {
+            margin-bottom: 15px;
+            display: flex;
+            gap: 10px;
+        }
+        
+        .chat-message.sent {
+            flex-direction: row-reverse;
+        }
+        
+        .chat-message-bubble {
+            max-width: 70%;
+            padding: 12px 16px;
+            border-radius: 18px;
+            word-wrap: break-word;
+        }
+        
+        .chat-message.received .chat-message-bubble {
+            background: white;
+            color: #333;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+        
+        .chat-message.sent .chat-message-bubble {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .chat-message-time {
+            font-size: 11px;
+            color: #6c757d;
+            margin-top: 5px;
+        }
+        
+        .chat-message.sent .chat-message-time {
+            text-align: right;
+        }
+        
+        .chat-widget-input {
+            padding: 20px;
+            background: white;
+            border-top: 1px solid #e9ecef;
+        }
+        
+        .chat-widget-input-group {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .chat-widget-input input {
+            flex: 1;
+            border: 2px solid #e9ecef;
+            border-radius: 25px;
+            padding: 10px 18px;
+            font-size: 14px;
+        }
+        
+        .chat-widget-input input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        .chat-widget-input button {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .chat-widget-input button:hover {
+            transform: scale(1.1);
+        }
+        
+        .chat-widget-input button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .chat-empty {
+            text-align: center;
+            padding: 40px 20px;
+            color: #6c757d;
+        }
+        
+        .chat-empty i {
+            font-size: 48px;
+            margin-bottom: 15px;
+            opacity: 0.5;
+        }
+        
+        @media (max-width: 768px) {
+            .chat-widget {
+                width: calc(100vw - 30px);
+                height: calc(100vh - 150px);
+                right: 15px;
+            }
+            
+            .chat-float-button {
+                right: 15px;
+                bottom: 20px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Floating Chat Button -->
+    <div class="chat-float-button" id="chatFloatBtn" sec:authorize="isAuthenticated()">
+        <i class="bi bi-chat-dots-fill"></i>
+        <span class="badge-count" id="chatBadgeCount" style="display: none;">0</span>
+    </div>
+    
+    <!-- Chat Widget -->
+    <div class="chat-widget" id="chatWidget" sec:authorize="isAuthenticated()">
+        <div class="chat-widget-header">
+            <div>
+                <h5>💬 Trò chuyện</h5>
+                <small style="opacity: 0.9;">HUTECH Bookstore</small>
+            </div>
+            <button class="close-chat" id="closeChatBtn">
+                <i class="bi bi-x"></i>
+            </button>
+        </div>
+        
+        <div class="chat-widget-messages" id="chatMessages">
+            <div class="chat-empty">
+                <i class="bi bi-chat-heart"></i>
+                <p>Chào bạn! Hãy gửi tin nhắn để bắt đầu trò chuyện với chúng tôi.</p>
+            </div>
+        </div>
+        
+        <div class="chat-widget-input">
+            <div class="chat-widget-input-group">
+                <input type="text" id="chatInput" placeholder="Nhập tin nhắn..." />
+                <button id="sendChatBtn">
+                    <i class="bi bi-send-fill"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <script th:inline="javascript">
+        (function() {
+            const chatFloatBtn = document.getElementById('chatFloatBtn');
+            const chatWidget = document.getElementById('chatWidget');
+            const closeChatBtn = document.getElementById('closeChatBtn');
+            const chatInput = document.getElementById('chatInput');
+            const sendChatBtn = document.getElementById('sendChatBtn');
+            const chatMessages = document.getElementById('chatMessages');
+            const chatBadgeCount = document.getElementById('chatBadgeCount');
+            
+            if (!chatFloatBtn) return; // Not authenticated
+            
+            let isOpen = false;
+            let pollInterval = null;
+            
+            // Toggle chat widget
+            chatFloatBtn.addEventListener('click', function() {
+                isOpen = !isOpen;
+                chatWidget.classList.toggle('active', isOpen);
+                
+                if (isOpen) {
+                    loadMessages();
+                    startPolling();
+                    chatInput.focus();
+                } else {
+                    stopPolling();
+                }
+            });
+            
+            closeChatBtn.addEventListener('click', function() {
+                isOpen = false;
+                chatWidget.classList.remove('active');
+                stopPolling();
+            });
+            
+            // Send message
+            sendChatBtn.addEventListener('click', sendMessage);
+            chatInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    sendMessage();
+                }
+            });
+            
+            function sendMessage() {
+                const message = chatInput.value.trim();
+                if (!message) return;
+                
+                sendChatBtn.disabled = true;
+                
+                fetch('/api/chat/send', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: 'message=' + encodeURIComponent(message)
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        chatInput.value = '';
+                        loadMessages();
+                    }
+                })
+                .catch(error => console.error('Error:', error))
+                .finally(() => {
+                    sendChatBtn.disabled = false;
+                    chatInput.focus();
+                });
+            }
+            
+            function loadMessages() {
+                fetch('/api/chat/messages')
+                    .then(response => response.json())
+                    .then(data => {
+                        displayMessages(data.messages || []);
+                    })
+                    .catch(error => console.error('Error:', error));
+            }
+            
+            function displayMessages(messages) {
+                if (messages.length === 0) {
+                    chatMessages.innerHTML = `
+                        <div class="chat-empty">
+                            <i class="bi bi-chat-heart"></i>
+                            <p>Chào bạn! Hãy gửi tin nhắn để bắt đầu trò chuyện với chúng tôi.</p>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                chatMessages.innerHTML = '';
+                messages.forEach(msg => {
+                    const messageDiv = document.createElement('div');
+                    messageDiv.className = 'chat-message ' + (msg.senderType === 'CUSTOMER' ? 'sent' : 'received');
+                    
+                    const time = new Date(msg.createdAt).toLocaleTimeString('vi-VN', { 
+                        hour: '2-digit', 
+                        minute: '2-digit' 
+                    });
+                    
+                    messageDiv.innerHTML = `
+                        <div class="chat-message-bubble">
+                            ${escapeHtml(msg.content)}
+                            <div class="chat-message-time">${time}</div>
+                        </div>
+                    `;
+                    
+                    chatMessages.appendChild(messageDiv);
+                });
+                
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+            }
+            
+            function loadUnreadCount() {
+                fetch('/api/chat/unread-count')
+                    .then(response => response.json())
+                    .then(data => {
+                        const count = data.count || 0;
+                        if (count > 0) {
+                            chatBadgeCount.textContent = count;
+                            chatBadgeCount.style.display = 'flex';
+                        } else {
+                            chatBadgeCount.style.display = 'none';
+                        }
+                    })
+                    .catch(error => console.error('Error:', error));
+            }
+            
+            function startPolling() {
+                loadMessages();
+                pollInterval = setInterval(loadMessages, 3000); // Poll every 3 seconds
+            }
+            
+            function stopPolling() {
+                if (pollInterval) {
+                    clearInterval(pollInterval);
+                    pollInterval = null;
+                }
+            }
+            
+            function escapeHtml(text) {
+                const div = document.createElement('div');
+                div.textContent = text;
+                return div.innerHTML;
+            }
+            
+            // Load unread count on page load
+            loadUnreadCount();
+            setInterval(loadUnreadCount, 5000); // Check every 5 seconds
+        })();
+    </script>
+</body>
+</html>

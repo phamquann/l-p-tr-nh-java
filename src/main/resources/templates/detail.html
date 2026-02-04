@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" 
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security" 
+      lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="'📖 ' + ${book.title} + ' - HUTECH Bookstore'">Chi Tiết Sách</title>
+    <th:block th:replace="~{layout::link-css}"></th:block>
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        
+        .detail-container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+        
+        .back-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            color: white;
+            text-decoration: none;
+            font-weight: 500;
+            margin-bottom: 25px;
+            padding: 10px 20px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 50px;
+            transition: all 0.3s ease;
+        }
+        
+        .back-btn:hover {
+            background: rgba(255,255,255,0.3);
+            color: white;
+            transform: translateX(-5px);
+        }
+        
+        .book-detail-card {
+            background: white;
+            border-radius: 25px;
+            overflow: hidden;
+            box-shadow: 0 25px 50px rgba(0,0,0,0.2);
+        }
+        
+        .book-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 50px 40px;
+            text-align: center;
+            position: relative;
+        }
+        
+        .book-icon-large {
+            font-size: 8rem;
+            margin-bottom: 20px;
+            display: block;
+            animation: float 3s ease-in-out infinite;
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+        
+        .book-title-large {
+            color: white;
+            font-size: 2.2rem;
+            font-weight: bold;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        }
+        
+        .book-author-large {
+            color: rgba(255,255,255,0.9);
+            font-size: 1.3rem;
+        }
+        
+        .book-body {
+            padding: 40px;
+        }
+        
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 25px;
+            margin-bottom: 35px;
+        }
+        
+        .info-card {
+            background: linear-gradient(135deg, #f5f7fa 0%, #e4e8eb 100%);
+            border-radius: 15px;
+            padding: 25px;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+        
+        .info-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        }
+        
+        .info-card.price-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        
+        .info-card.price-card .info-label,
+        .info-card.price-card .info-value {
+            color: white;
+        }
+        
+        .info-icon {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+        
+        .info-label {
+            color: #888;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 5px;
+        }
+        
+        .info-value {
+            color: #333;
+            font-size: 1.4rem;
+            font-weight: bold;
+        }
+        
+        .category-badge {
+            display: inline-block;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 8px 25px;
+            border-radius: 50px;
+            font-size: 1rem;
+            font-weight: 500;
+        }
+        
+        .action-buttons {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            justify-content: center;
+            padding-top: 20px;
+            border-top: 2px solid #f0f0f0;
+        }
+        
+        .btn-action {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            padding: 15px 35px;
+            border-radius: 50px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            border: none;
+            cursor: pointer;
+        }
+        
+        .btn-cart {
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+            color: white;
+        }
+        
+        .btn-cart:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(17, 153, 142, 0.4);
+            color: white;
+        }
+        
+        .btn-edit {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .btn-edit:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
+            color: white;
+        }
+        
+        .btn-delete {
+            background: linear-gradient(135deg, #eb3349 0%, #f45c43 100%);
+            color: white;
+        }
+        
+        .btn-delete:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(235, 51, 73, 0.4);
+            color: white;
+        }
+        
+        .btn-back-list {
+            background: #f0f0f0;
+            color: #666;
+        }
+        
+        .btn-back-list:hover {
+            background: #e0e0e0;
+            transform: translateY(-3px);
+            color: #333;
+        }
+        
+        /* Book Description Section */
+        .book-description {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 30px;
+        }
+        
+        .book-description h4 {
+            color: #667eea;
+            margin-bottom: 15px;
+            font-weight: 600;
+        }
+        
+        .book-description p {
+            color: #666;
+            line-height: 1.8;
+        }
+        
+        /* Related Info */
+        .book-meta {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            flex-wrap: wrap;
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid rgba(255,255,255,0.3);
+        }
+        
+        .meta-item {
+            color: rgba(255,255,255,0.8);
+            font-size: 0.95rem;
+        }
+        
+        .meta-item strong {
+            color: white;
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .book-title-large {
+                font-size: 1.6rem;
+            }
+            
+            .book-icon-large {
+                font-size: 5rem;
+            }
+            
+            .btn-action {
+                width: 100%;
+                justify-content: center;
+            }
+            
+            .action-buttons {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<th:block th:replace="~{layout::header}"></th:block>
+
+<div class="detail-container">
+    <!-- Back Button -->
+    <a href="/books" class="back-btn">
+        ← Quay lại danh sách
+    </a>
+    
+    <!-- Book Detail Card -->
+    <div class="book-detail-card">
+        <!-- Header Section -->
+        <div class="book-header">
+            <span class="book-icon-large">📖</span>
+            <h1 class="book-title-large" th:text="${book.title}">Tên Sách</h1>
+            <p class="book-author-large">
+                ✍️ <span th:text="${book.author}">Tác Giả</span>
+            </p>
+            <div class="book-meta">
+                <span class="meta-item">
+                    <strong>ID:</strong> #<span th:text="${book.id}"></span>
+                </span>
+                <span class="meta-item" th:if="${book.category != null}">
+                    <strong>Thể loại:</strong> <span th:text="${book.category.name}"></span>
+                </span>
+            </div>
+        </div>
+        
+        <!-- Body Section -->
+        <div class="book-body">
+            <!-- Info Grid -->
+            <div class="info-grid">
+                <div class="info-card price-card">
+                    <div class="info-icon">💰</div>
+                    <div class="info-label">Giá bán</div>
+                    <div class="info-value">
+                        <span th:text="${#numbers.formatDecimal(book.price, 1, 0)}">0</span>đ
+                    </div>
+                </div>
+                
+                <div class="info-card">
+                    <div class="info-icon">📚</div>
+                    <div class="info-label">Thể Loại</div>
+                    <div class="info-value">
+                        <span class="category-badge" th:text="${book.category != null ? book.category.name : 'Chưa phân loại'}">Category</span>
+                    </div>
+                </div>
+                
+                <div class="info-card">
+                    <div class="info-icon">✍️</div>
+                    <div class="info-label">Tác Giả</div>
+                    <div class="info-value" th:text="${book.author}">Author</div>
+                </div>
+            </div>
+            
+            <!-- Description -->
+            <div class="book-description">
+                <h4>📝 Mô Tả Sách</h4>
+                <p>
+                    Đây là cuốn sách "<span th:text="${book.title}"></span>" được viết bởi tác giả 
+                    <strong th:text="${book.author}"></strong>. 
+                    Cuốn sách thuộc thể loại 
+                    <strong th:text="${book.category != null ? book.category.name : 'Chưa phân loại'}"></strong>, 
+                    phù hợp cho những ai yêu thích đọc sách và muốn mở rộng kiến thức.
+                </p>
+            </div>
+            
+            <!-- Action Buttons -->
+            <div class="action-buttons">
+                <form th:action="@{/cart/add/{id}(id=${book.id})}" method="post" style="display: inline;">
+                    <button type="submit" class="btn-action btn-cart">
+                        🛒 Thêm vào giỏ hàng
+                    </button>
+                </form>
+                
+                <a th:href="@{/books/edit/{id}(id=${book.id})}" class="btn-action btn-edit" sec:authorize="hasRole('ADMIN')">
+                    ✏️ Chỉnh sửa
+                </a>
+                
+                <a th:href="@{/books/delete/{id}(id=${book.id})}" 
+                   class="btn-action btn-delete" 
+                   onclick="return confirm('Bạn có chắc chắn muốn xóa sách này?')"
+                   sec:authorize="hasRole('ADMIN')">
+                    🗑️ Xóa sách
+                </a>
+                
+                <a href="/books" class="btn-action btn-back-list">
+                    📚 Xem tất cả sách
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<th:block th:replace="~{layout::footer}"></th:block>
+
+</body>
+</html>

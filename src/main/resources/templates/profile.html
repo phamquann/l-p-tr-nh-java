@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" 
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security" 
+      lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>👤 Trang Cá Nhân - HUTECH</title>
+    <th:block th:replace="~{layout::link-css}"></th:block>
+    <th:block th:replace="~{layout::custom-css}"></th:block>
+    <style>
+        .profile-container {
+            max-width: 900px;
+            margin: 40px auto;
+        }
+        
+        .profile-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 40px;
+            border-radius: 15px 15px 0 0;
+            text-align: center;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        
+        .profile-avatar {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            background: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 20px;
+            font-size: 60px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+        
+        .profile-name {
+            font-size: 32px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        
+        .profile-role {
+            font-size: 16px;
+            opacity: 0.9;
+        }
+        
+        .profile-body {
+            background: white;
+            padding: 40px;
+            border-radius: 0 0 15px 15px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        
+        .section-title {
+            font-size: 20px;
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #667eea;
+        }
+        
+        .info-row {
+            display: flex;
+            padding: 15px 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        
+        .info-row:last-child {
+            border-bottom: none;
+        }
+        
+        .info-label {
+            width: 150px;
+            font-weight: bold;
+            color: #666;
+        }
+        
+        .info-value {
+            flex: 1;
+            color: #333;
+        }
+        
+        .badge-role {
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+            margin-right: 5px;
+        }
+        
+        .form-section {
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 10px;
+            margin-bottom: 25px;
+        }
+        
+        .btn-gradient {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            color: white;
+            padding: 10px 30px;
+            border-radius: 25px;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+        
+        .btn-gradient:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+            color: white;
+        }
+    </style>
+</head>
+
+<body>
+
+<th:block th:replace="~{layout::header}"></th:block>
+
+<div class="container">
+    <div class="profile-container">
+        <!-- Profile Header -->
+        <div class="profile-header">
+            <div class="profile-avatar">
+                👤
+            </div>
+            <div class="profile-name" th:text="${user.fullName != null && !user.fullName.isEmpty() ? user.fullName : user.username}"></div>
+            <div class="profile-role">
+                <span th:each="role : ${user.roles}" 
+                      class="badge badge-role"
+                      th:classappend="${role.name == 'ROLE_ADMIN' ? 'bg-danger' : 'bg-info'}"
+                      th:text="${role.name == 'ROLE_ADMIN' ? '👑 Quản Trị Viên' : '👨‍💼 Người Dùng'}">
+                </span>
+            </div>
+            
+            <!-- Quick Links -->
+            <div class="mt-4">
+                <a href="/profile/orders" class="btn btn-light btn-sm mx-1">
+                    📦 Đơn hàng của tôi
+                </a>
+                <a href="/cart" class="btn btn-light btn-sm mx-1">
+                    🛒 Giỏ hàng
+                </a>
+            </div>
+        </div>
+
+        <!-- Profile Body -->
+        <div class="profile-body">
+            <!-- Basic Information -->
+            <div class="section-title">📋 Thông Tin Cơ Bản</div>
+            
+            <div class="info-row">
+                <div class="info-label">🔑 Tên đăng nhập:</div>
+                <div class="info-value" th:text="${user.username}"></div>
+            </div>
+            
+            <div class="info-row">
+                <div class="info-label">📧 Email:</div>
+                <div class="info-value" th:text="${user.email != null ? user.email : 'Chưa cập nhật'}"></div>
+            </div>
+            
+            <div class="info-row">
+                <div class="info-label">📱 Số điện thoại:</div>
+                <div class="info-value" th:text="${user.phone != null ? user.phone : 'Chưa cập nhật'}"></div>
+            </div>
+            
+            <div class="info-row">
+                <div class="info-label">👤 Họ và tên:</div>
+                <div class="info-value" th:text="${user.fullName != null ? user.fullName : 'Chưa cập nhật'}"></div>
+            </div>
+            
+            <div class="info-row">
+                <div class="info-label">✅ Trạng thái:</div>
+                <div class="info-value">
+                    <span th:if="${user.enabled}" class="badge bg-success">Đang hoạt động</span>
+                    <span th:unless="${user.enabled}" class="badge bg-danger">Bị khóa</span>
+                </div>
+            </div>
+
+            <hr class="my-4">
+
+            <!-- Update Profile Form -->
+            <div class="section-title">✏️ Chỉnh Sửa Thông Tin</div>
+            
+            <form th:action="@{/profile/update}" method="post" class="form-section">
+                <div class="mb-3">
+                    <label class="form-label">📧 Email</label>
+                    <input type="email" name="email" class="form-control" 
+                           th:value="${user.email}" required>
+                </div>
+                
+                <div class="mb-3">
+                    <label class="form-label">👤 Họ và tên</label>
+                    <input type="text" name="fullName" class="form-control" 
+                           th:value="${user.fullName}" placeholder="Nhập họ và tên đầy đủ">
+                </div>
+                
+                <div class="mb-3">
+                    <label class="form-label">📱 Số điện thoại</label>
+                    <input type="text" name="phone" class="form-control" 
+                           th:value="${user.phone}" placeholder="Nhập số điện thoại">
+                </div>
+                
+                <button type="submit" class="btn btn-gradient">
+                    💾 Lưu Thay Đổi
+                </button>
+            </form>
+
+            <!-- Change Password Form -->
+            <div class="section-title">🔐 Đổi Mật Khẩu</div>
+            
+            <form th:action="@{/profile/change-password}" method="post" class="form-section">
+                <div class="mb-3">
+                    <label class="form-label">🔒 Mật khẩu hiện tại</label>
+                    <input type="password" name="currentPassword" class="form-control" 
+                           required minlength="6" placeholder="Nhập mật khẩu hiện tại">
+                </div>
+                
+                <div class="mb-3">
+                    <label class="form-label">🆕 Mật khẩu mới</label>
+                    <input type="password" name="newPassword" class="form-control" 
+                           required minlength="6" placeholder="Nhập mật khẩu mới (tối thiểu 6 ký tự)">
+                </div>
+                
+                <div class="mb-3">
+                    <label class="form-label">✅ Xác nhận mật khẩu mới</label>
+                    <input type="password" name="confirmPassword" class="form-control" 
+                           required minlength="6" placeholder="Nhập lại mật khẩu mới">
+                </div>
+                
+                <button type="submit" class="btn btn-gradient">
+                    🔄 Đổi Mật Khẩu
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<th:block th:replace="~{layout::footer}"></th:block>
+
+</body>
+</html>

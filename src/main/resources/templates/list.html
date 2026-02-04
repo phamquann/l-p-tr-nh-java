@@ -1,5 +1,7 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org" lang="vi">
+<html xmlns:th="http://www.thymeleaf.org" 
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security" 
+      lang="vi">
 <head>
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
@@ -7,6 +9,136 @@
     <title>📚 Quản Lý Thư Viện Sách - HUTECH</title>
     <th:block th:replace="~{layout::link-css}"></th:block>
     <th:block th:replace="~{layout::custom-css}"></th:block>
+    <style>
+        /* Grid Layout for User */
+        .books-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 25px;
+            padding: 20px 0;
+        }
+        
+        .book-card {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+        
+        .book-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 15px 30px rgba(0,0,0,0.15);
+        }
+        
+        .book-card .book-icon {
+            font-size: 4rem;
+            text-align: center;
+            margin-bottom: 15px;
+            color: #667eea;
+        }
+        
+        .book-card .book-title {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 10px;
+            min-height: 48px;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            text-align: center;
+        }
+        
+        .book-card .book-author {
+            color: #666;
+            font-size: 0.95rem;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+        
+        .book-card .book-price {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+        
+        .book-card .book-category {
+            display: inline-block;
+            background: #667eea;
+            color: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            margin-bottom: 15px;
+            text-align: center;
+            align-self: center;
+        }
+        
+        .book-card .btn-add-cart {
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+            color: white;
+            border: none;
+            border-radius: 25px;
+            padding: 10px 20px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            width: 100%;
+            cursor: pointer;
+        }
+        
+        .book-card .btn-add-cart:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(17, 153, 142, 0.4);
+            color: white;
+        }
+        
+        .book-card .book-link {
+            text-decoration: none;
+            color: inherit;
+            display: block;
+        }
+        
+        .book-card .book-link:hover .book-icon {
+            transform: scale(1.1);
+        }
+        
+        .book-card .book-link:hover .book-title {
+            color: #667eea;
+        }
+        
+        .book-card .book-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-top: auto;
+        }
+        
+        .book-card .btn-view-detail {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 25px;
+            padding: 10px 20px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            text-align: center;
+            text-decoration: none;
+            display: block;
+        }
+        
+        .book-card .btn-view-detail:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+            color: white;
+        }
+    </style>
 </head>
 
 <body>
@@ -28,35 +160,67 @@
     <!-- Page Header -->
     <div class="page-header-section">
         <div class="header-content">
-            <h1 class="page-title">📚 Quản Lý Thư Viện Sách</h1>
+            <h1 class="page-title" sec:authorize="hasRole('ADMIN')">📚 Quản Lý Thư Viện Sách</h1>
+            <h1 class="page-title" sec:authorize="hasRole('USER')">📚 Danh Sách Sách</h1>
             <p class="page-description">
-                Danh sách toàn bộ sách trong hệ thống 
+                <span sec:authorize="hasRole('ADMIN')">Danh sách toàn bộ sách trong hệ thống</span>
+                <span sec:authorize="hasRole('USER')">Khám phá bộ sưu tập sách của chúng tôi</span>
                 <span class="badge bg-primary" th:text="'Tổng: ' + ${totalBooks} + ' quyển'"></span>
             </p>
         </div>
-        <a href="/books/add" class="btn-add-new">
+        <a href="/books/add" class="btn-add-new" sec:authorize="hasRole('ADMIN')">
             ➕ Thêm Sách Mới
         </a>
     </div>
 
-    <!-- Books Table -->
-    <div class="table-container">
-        <div th:if="${books == null || books.isEmpty()}" class="empty-state">
-            <div class="empty-icon">📭</div>
-            <h3>Chưa có sách nào</h3>
-            <p>Hãy thêm sách đầu tiên vào thư viện của bạn!</p>
-            <a href="/books/add" class="btn btn-primary">➕ Thêm Sách Ngay</a>
-        </div>
+    <!-- Empty State -->
+    <div th:if="${books == null || books.isEmpty()}" class="empty-state">
+        <div class="empty-icon">📭</div>
+        <h3>Chưa có sách nào</h3>
+        <p>Hãy thêm sách đầu tiên vào thư viện của bạn!</p>
+        <a href="/books/add" class="btn btn-primary" sec:authorize="hasRole('ADMIN')">➕ Thêm Sách Mới</a>
+    </div>
 
+    <!-- Grid View for User -->
+    <div sec:authorize="hasRole('USER')" th:if="${books != null && !books.isEmpty()}">
+        <div class="books-grid">
+            <div th:each="book : ${books}" class="book-card">
+                <a th:href="@{/books/detail/{id}(id=${book.id})}" class="book-link">
+                    <div class="book-icon">📖</div>
+                    <div class="book-title" th:text="${book.title}"></div>
+                </a>
+                <div class="book-author">
+                    ✍️ <span th:text="${book.author}"></span>
+                </div>
+                <span class="book-category" th:text="${book.category != null ? book.category.name : 'Chưa phân loại'}"></span>
+                <div class="book-price">
+                    <span th:text="${#numbers.formatDecimal(book.price, 1, 0)}"></span>đ
+                </div>
+                <div class="book-actions">
+                    <a th:href="@{/books/detail/{id}(id=${book.id})}" class="btn-view-detail">
+                        👁️ Xem chi tiết
+                    </a>
+                    <form th:action="@{/cart/add/{id}(id=${book.id})}" method="post">
+                        <button type="submit" class="btn-add-cart">
+                            🛒 Thêm vào giỏ
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Table View for Admin -->
+    <div sec:authorize="hasRole('ADMIN')" class="table-container">
         <table th:if="${books != null && !books.isEmpty()}" class="table table-hover">
             <thead>
                 <tr>
                     <th class="text-center" width="8%">ID</th>
-                    <th width="30%">Tên Sách</th>
-                    <th width="20%">Tác Giả</th>
+                    <th width="25%">Tên Sách</th>
+                    <th width="18%">Tác Giả</th>
                     <th class="text-end" width="12%">Giá</th>
-                    <th width="15%">Thể Loại</th>
-                    <th class="text-center" width="15%">Thao Tác</th>
+                    <th width="12%">Thể Loại</th>
+                    <th class="text-center" width="25%">Thao Tác</th>
                 </tr>
             </thead>
             <tbody>
@@ -73,9 +237,19 @@
                         <span class="currency">đ</span>
                     </td>
                     <td>
-                        <span class="badge bg-info" th:text="${book.category}"></span>
+                        <span class="badge bg-info" th:text="${book.category != null ? book.category.name : 'Chưa phân loại'}"></span>
                     </td>
                     <td class="text-center action-cell">
+                        <a th:href="@{/books/detail/{id}(id=${book.id})}" 
+                           class="btn btn-sm btn-info" 
+                           title="Xem chi tiết">
+                            👁️ Chi tiết
+                        </a>
+                        <form th:action="@{/cart/add/{id}(id=${book.id})}" method="post" style="display: inline;">
+                            <button type="submit" class="btn btn-sm btn-success" title="Thêm vào giỏ">
+                                🛒 Giỏ
+                            </button>
+                        </form>
                         <a th:href="@{/books/edit/{id}(id=${book.id})}" 
                            class="btn btn-sm btn-primary" 
                            title="Chỉnh sửa">
@@ -91,81 +265,6 @@
                 </tr>
             </tbody>
         </table>
-    </div>
-</div>
-
-<th:block th:replace="~{layout::footer}"></th:block>
-
-</body>
-</html>
-                    <td>
-                        <span class="id-badge" th:text="${book.getId()}"></span>
-                    </td>
-                    <td>
-                        <div class="book-info">
-                            <span class="book-icon">📖</span>
-                            <strong class="book-title" th:text="${book.getTitle()}"></strong>
-                        </div>
-                    </td>
-                    <td>
-                        <span class="author-name" th:text="${book.getAuthor()}"></span>
-                    </td>
-                    <td>
-                        <span class="price-tag" th:text="${book.getPrice()} + ' đ'"></span>
-                    </td>
-                    <td>
-                        <span class="category-badge" th:text="${book.getCategory()}"></span>
-                    </td>
-                    <td class="text-center">
-                        <div class="action-buttons">
-                            
-                                class="btn btn-edit"
-                                th:href="@{/books/edit/{id}(id=${book.getId()})}"
-                                title="Chỉnh sửa sách"
-                            >
-                                <span class="btn-icon">✏️</span>
-                                Sửa
-                            </a>
-                            
-                                class="btn btn-delete"
-                                th:href="@{/books/delete/{id}(id=${book.getId()})}"
-                                onclick="return confirm('⚠️ Bạn có chắc chắn muốn xóa sách này không?')"
-                                title="Xóa sách"
-                            >
-                                <span class="btn-icon">🗑️</span>
-                                Xóa
-                            </a>
-                        </div>
-                    </td>
-                </tr>
-            </tbody>
-        </table>
-    </div>
-
-    <!-- Pagination -->
-    <div class="pagination-section">
-        <div class="pagination-info">
-            Hiển thị <strong>1-10</strong> trong tổng số <strong>50</strong> sách
-        </div>
-        <nav class="pagination-nav">
-            <ul class="pagination">
-                <li class="page-item disabled">
-                    <a class="page-link" href="#">« Trước</a>
-                </li>
-                <li class="page-item active">
-                    <a class="page-link" href="#">1</a>
-                </li>
-                <li class="page-item">
-                    <a class="page-link" href="#">2</a>
-                </li>
-                <li class="page-item">
-                    <a class="page-link" href="#">3</a>
-                </li>
-                <li class="page-item">
-                    <a class="page-link" href="#">Sau »</a>
-                </li>
-            </ul>
-        </nav>
     </div>
 </div>
 
